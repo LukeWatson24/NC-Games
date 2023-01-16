@@ -11,7 +11,7 @@ const noResults = (err, req, res, next) => {
   }
 };
 
-const invalidDataType = (err, req, res, next) => {
+const invalidDataTypePSQL = (err, req, res, next) => {
   if (err.code === "22P02") {
     res.status(400).send({ message: "invalid data type" });
   } else {
@@ -19,4 +19,4 @@ const invalidDataType = (err, req, res, next) => {
   }
 };
 
-module.exports = { pathNotFound, noResults, invalidDataType };
+module.exports = { pathNotFound, noResults, invalidDataTypePSQL };

@@ -8,7 +8,7 @@ const {
 const {
   pathNotFound,
   noResults,
-  invalidDataType,
+  invalidDataTypePSQL,
 } = require("./error_handling/app.errors");
 
 const app = express();
@@ -21,6 +21,6 @@ app.get("/api/reviews/:review_id/comments", getCommentsByReviewId);
 app.all("/*", pathNotFound);
 
 app.use(noResults);
-app.use(invalidDataType);
+app.use(invalidDataTypePSQL);
 
 module.exports = app;

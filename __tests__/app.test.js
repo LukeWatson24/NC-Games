@@ -116,3 +116,93 @@ describe("GET /api/reviews/:review_id", () => {
       });
   });
 });
+
+describe("POST /api/reviews/:review_id/comments", () => {
+  it("should return 201 with the created comment object", () => {
+    const newComment = {
+      username: "mallionaire",
+      body: "TEST COMMENT",
+    };
+    return request(app)
+      .post("/api/reviews/4/comments")
+      .send(newComment)
+      .expect(201)
+      .then(({ body }) => {
+        const comment = body.comment;
+        expect(comment).toHaveProperty("comment_id", expect.any(Number));
+        expect(comment).toHaveProperty("votes", 0);
+        expect(comment).toHaveProperty("created_at", expect.any(String));
+        expect(comment).toHaveProperty("author", "mallionaire");
+        expect(comment).toHaveProperty("body", "TEST COMMENT");
+        expect(comment).toHaveProperty("review_id", 4);
+      });
+  });
+  it("should add the comment to the database", () => {
+    const newComment = {
+      username: "mallionaire",
+      body: "TEST COMMENT",
+    };
+    return request(app)
+      .post("/api/reviews/4/comments")
+      .send(newComment)
+      .then(() => {
+        return db.query("SELECT * FROM comments WHERE review_id = 4;");
+      })
+      .then(({ rows }) => {
+        expect(rows.length).toBe(1);
+        expect(rows[0].body).toBe("TEST COMMENT");
+        expect(rows[0].author).toBe("mallionaire");
+      });
+  });
+  it("should return 400 with correct message when a review matching the provided id is not found", () => {
+    const newComment = {
+      username: "mallionaire",
+      body: "TEST COMMENT",
+    };
+    return request(app)
+      .post("/api/reviews/999/comments")
+      .send(newComment)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("bad request");
+      });
+  });
+  it("should return 400 with correct message if data type for review_id is incorrect", () => {
+    const newComment = {
+      username: "mallionaire",
+      body: "TEST COMMENT",
+    };
+    return request(app)
+      .post("/api/reviews/test/comments")
+      .send(newComment)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("invalid data type");
+      });
+  });
+  it("should return 400 if the username does not exist", () => {
+    const newComment = {
+      username: "TEST USERNAME",
+      body: "TEST COMMENT",
+    };
+    return request(app)
+      .post("/api/reviews/4/comments")
+      .send(newComment)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("bad request");
+      });
+  });
+  it("should return 400 if the request body has missing keys", () => {
+    const newComment = {
+      username: "mallionaire",
+    };
+    return request(app)
+      .post("/api/reviews/4/comments")
+      .send(newComment)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("bad request");
+      });
+  });
+});

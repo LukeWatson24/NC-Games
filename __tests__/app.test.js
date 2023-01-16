@@ -3,7 +3,6 @@ const request = require("supertest");
 const testData = require("../db/data/test-data/index");
 const db = require("../db/connection");
 const seed = require("../db/seeds/seed");
-const { expect } = require("@jest/globals");
 
 beforeEach(() => {
   return seed(testData);
@@ -110,6 +109,59 @@ describe("GET /api/reviews/:review_id", () => {
   it("should return 400 with correct message if data type for review_id is incorrect", () => {
     return request(app)
       .get("/api/reviews/test")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("invalid data type");
+      });
+  });
+});
+
+describe("GET /api/reviews/:review_id/comments", () => {
+  it("should return 200 with an array of comments with correct keys", () => {
+    return request(app)
+      .get("/api/reviews/3/comments")
+      .expect(200)
+      .then(({ body }) => {
+        const comments = body.comments;
+        expect(Array.isArray(comments)).toBe(true);
+        expect(comments.length).toBeGreaterThan(0);
+        comments.forEach((comment) => {
+          expect(comment).toHaveProperty("comment_id", expect.any(Number));
+          expect(comment).toHaveProperty("votes", expect.any(Number));
+          expect(comment).toHaveProperty("created_at", expect.any(String));
+          expect(comment).toHaveProperty("author", expect.any(String));
+          expect(comment).toHaveProperty("body", expect.any(String));
+          expect(comment).toHaveProperty("review_id", expect.any(Number));
+        });
+      });
+  });
+  test("comments are sorted by date in descending order", () => {
+    return request(app)
+      .get("/api/reviews/3/comments")
+      .then(({ body }) => {
+        const comments = body.comments;
+        expect(comments).toBeSorted({ key: "created_at", descending: true });
+      });
+  });
+  it("should return an empty array when passed a review id which has no comments", () => {
+    return request(app)
+      .get("/api/reviews/1/comments")
+      .then(({ body }) => {
+        const comments = body.comments;
+        expect(comments).toEqual([]);
+      });
+  });
+  it("should return 404 with correct message when a review matching the provided id is not found", () => {
+    return request(app)
+      .get("/api/reviews/999/comments")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.message).toBe("id not found");
+      });
+  });
+  it("should return 400 with correct message if data type for review_id is incorrect", () => {
+    return request(app)
+      .get("/api/reviews/test/comments")
       .expect(400)
       .then(({ body }) => {
         expect(body.message).toBe("invalid data type");

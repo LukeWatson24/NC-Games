@@ -3,7 +3,6 @@ const request = require("supertest");
 const testData = require("../db/data/test-data/index");
 const db = require("../db/connection");
 const seed = require("../db/seeds/seed");
-const { expect } = require("@jest/globals");
 
 beforeEach(() => {
   return seed(testData);
@@ -125,6 +124,7 @@ describe("GET /api/reviews/:review_id/comments", () => {
       .then(({ body }) => {
         const comments = body.comments;
         expect(Array.isArray(comments)).toBe(true);
+        expect(comments.length).toBeGreaterThan(0);
         comments.forEach((comment) => {
           expect(comment).toHaveProperty("comment_id", expect.any(Number));
           expect(comment).toHaveProperty("votes", expect.any(Number));

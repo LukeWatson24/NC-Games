@@ -3,6 +3,7 @@ const request = require("supertest");
 const testData = require("../db/data/test-data/index");
 const db = require("../db/connection");
 const seed = require("../db/seeds/seed");
+const { expect } = require("@jest/globals");
 
 beforeEach(() => {
   return seed(testData);
@@ -13,8 +14,13 @@ afterAll(() => {
 });
 
 describe("general 404 errors", () => {
-  test("returns 404 if endpoint does not exist", () => {
-    return request(app).get("/api/test").expect(404);
+  test("returns 404 if endpoint does not exist with correct message", () => {
+    return request(app)
+      .get("/api/test")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.message).toBe("path '/api/test' does not exist");
+      });
   });
 });
 

@@ -1,3 +1,4 @@
+const app = require("../app");
 const { fetchCategories } = require("../models/app.models");
 
 const getCategories = (req, res, next) => {

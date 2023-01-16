@@ -19,7 +19,7 @@ describe("general 404 errors", () => {
       .get("/api/test")
       .expect(404)
       .then(({ body }) => {
-        expect(body.message).toBe("path '/api/test' does not exist");
+        expect(body.message).toBe("path does not exist");
       });
   });
 });

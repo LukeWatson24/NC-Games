@@ -104,7 +104,7 @@ describe("GET /api/reviews/:review_id", () => {
       .get("/api/reviews/999")
       .expect(404)
       .then(({ body }) => {
-        expect(body.message).toBe("not found");
+        expect(body.message).toBe("id not found");
       });
   });
   it("should return 400 with correct message if data type for review_id is incorrect", () => {

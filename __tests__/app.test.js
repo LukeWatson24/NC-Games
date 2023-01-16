@@ -116,3 +116,16 @@ describe("GET /api/reviews/:review_id", () => {
       });
   });
 });
+
+// describe("GET /api/reviews/:review_id/comments", () => {
+//   it("should return 200 with an array of comments with correct keys", () => {
+//     return request(app)
+//       .get("/api/reviews/3/comments")
+//       .expect(200)
+//       .then(({ body }) => {
+//         const comments = body.comments;
+//         expect(Array.isArray(comments)).toBe(true);
+//         comments.forEach((comment) => {});
+//       });
+//   });
+// });

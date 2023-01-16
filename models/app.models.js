@@ -35,4 +35,11 @@ const fetchReviewsById = (review_id) => {
     });
 };
 
-module.exports = { fetchCategories, fetchReviews, fetchReviewsById };
+const fetchCommentsByReviewId = (review_id) => {};
+
+module.exports = {
+  fetchCategories,
+  fetchReviews,
+  fetchReviewsById,
+  fetchCommentsByReviewId,
+};

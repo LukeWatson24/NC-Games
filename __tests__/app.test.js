@@ -12,6 +12,12 @@ afterAll(() => {
   if (db.end) db.end();
 });
 
+describe("general 404 errors", () => {
+  test("returns 404 if endpoint does not exist", () => {
+    return request(app).get("/api/test").expect(404);
+  });
+});
+
 describe("GET /api/categories", () => {
   it("should return 200 with an array of objects with correct keys", () => {
     return request(app)

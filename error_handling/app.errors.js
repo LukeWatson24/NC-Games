@@ -1,6 +1,6 @@
 const pathNotFound = (req, res, next) => {
   const path = req.originalUrl;
-  res.status(404).send({ message: `path '${path}' does not exist` });
+  res.status(404).send({ message: `path not found` });
 };
 
 const noResults = (err, req, res, next) => {

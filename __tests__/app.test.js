@@ -19,7 +19,7 @@ describe("general 404 errors", () => {
       .get("/api/test")
       .expect(404)
       .then(({ body }) => {
-        expect(body.message).toBe("path '/api/test' does not exist");
+        expect(body.message).toBe("path not found");
       });
   });
 });
@@ -95,7 +95,7 @@ describe("GET /api/reviews/:review_id", () => {
         );
         expect(review).toHaveProperty("category", "dexterity");
         expect(review).toHaveProperty("votes", 5);
-        expect(review).toHaveProperty("created_at");
+        expect(review).toHaveProperty("created_at", "2021-01-18T10:01:41.251Z");
         expect(Date.parse(review.created_at)).toBe(1610964101251);
       });
   });

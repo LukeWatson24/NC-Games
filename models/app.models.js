@@ -88,14 +88,18 @@ const updateReviewVotes = (review_id, inc_votes) => {
     });
 };
 
+const fetchUsers = () => {
+  return db.query("SELECT * FROM users;").then(({ rows }) => {
+    return rows;
+  });
+};
+
 module.exports = {
   fetchCategories,
-
   fetchReviews,
-
   fetchReviewsById,
-
   fetchCommentsByReviewId,
   addCommentToReview,
   updateReviewVotes,
+  fetchUsers,
 };

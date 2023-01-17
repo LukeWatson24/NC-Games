@@ -5,10 +5,11 @@ const {
   fetchCommentsByReviewId,
   addCommentToReview,
   updateReviewVotes,
+  fetchUsers,
 } = require("../models/app.models");
 
 const getCategories = (req, res, next) => {
-  return fetchCategories()
+  fetchCategories()
     .then((categories) => {
       res.status(200).send({ categories });
     })
@@ -18,7 +19,7 @@ const getCategories = (req, res, next) => {
 };
 
 const getReviews = (req, res, next) => {
-  return fetchReviews()
+  fetchReviews()
     .then((reviews) => {
       res.status(200).send({ reviews });
     })
@@ -29,7 +30,7 @@ const getReviews = (req, res, next) => {
 
 const getReviewsById = (req, res, next) => {
   const { review_id } = req.params;
-  return fetchReviewsById(review_id)
+  fetchReviewsById(review_id)
     .then((review) => {
       res.status(200).send({ review });
     })
@@ -40,7 +41,7 @@ const getReviewsById = (req, res, next) => {
 
 const getCommentsByReviewId = (req, res, next) => {
   const { review_id } = req.params;
-  return fetchCommentsByReviewId(review_id)
+  fetchCommentsByReviewId(review_id)
     .then((comments) => {
       res.status(200).send({ comments });
     })
@@ -51,7 +52,7 @@ const getCommentsByReviewId = (req, res, next) => {
 
 const postComment = (req, res, next) => {
   const { review_id } = req.params;
-  return addCommentToReview(review_id, req.body)
+  addCommentToReview(review_id, req.body)
     .then((comment) => {
       res.status(201).send({ comment });
     })
@@ -63,12 +64,22 @@ const postComment = (req, res, next) => {
 const patchReviewVotes = (req, res, next) => {
   const { review_id } = req.params;
   const { inc_votes } = req.body;
-  return Promise.all([
+  Promise.all([
     updateReviewVotes(review_id, inc_votes),
     fetchReviewsById(review_id),
   ])
     .then(([review]) => {
       res.status(200).send({ review });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+const getUsers = (req, res, next) => {
+  fetchUsers()
+    .then((users) => {
+      res.status(200).send({ users });
     })
     .catch((err) => {
       next(err);
@@ -82,4 +93,5 @@ module.exports = {
   getCommentsByReviewId,
   postComment,
   patchReviewVotes,
+  getUsers,
 };

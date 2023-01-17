@@ -20,4 +20,17 @@ const invalidDataTypePSQL = (err, req, res, next) => {
   }
 };
 
-module.exports = { pathNotFound, noResults, invalidDataTypePSQL };
+const badRequestPSQL = (err, req, res, next) => {
+  if (err.code === "23503" || err.code === "23502") {
+    res.status(400).send({ message: "bad request" });
+  } else {
+    next(err);
+  }
+};
+
+module.exports = {
+  pathNotFound,
+  noResults,
+  invalidDataTypePSQL,
+  badRequestPSQL,
+};

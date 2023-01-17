@@ -258,3 +258,19 @@ describe("POST /api/reviews/:review_id/comments", () => {
       });
   });
 });
+describe("GET /api/users", () => {
+  it("should return 200 with an array of users with correct keys", () => {
+    return request(app)
+      .get("/api/users")
+      .expect(200)
+      .then(({ body }) => {
+        const { users } = body;
+        expect(users.length).toBeGreaterThan(0);
+        users.forEach((user) => {
+          expect(user).toHaveProperty("username", expect.any(String));
+          expect(user).toHaveProperty("name", expect.any(String));
+          expect(user).toHaveProperty("avatar_url", expect.any(String));
+        });
+      });
+  });
+});

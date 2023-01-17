@@ -4,6 +4,7 @@ const {
   fetchReviewsById,
   fetchCommentsByReviewId,
   addCommentToReview,
+  fetchUsers,
 } = require("../models/app.models");
 
 const getCategories = (req, res, next) => {
@@ -59,10 +60,21 @@ const postComment = (req, res, next) => {
     });
 };
 
+const getUsers = (req, res, next) => {
+  return fetchUsers()
+    .then((users) => {
+      res.status(200).send({ users });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
 module.exports = {
   getCategories,
   getReviews,
   getReviewsById,
   getCommentsByReviewId,
   postComment,
+  getUsers,
 };

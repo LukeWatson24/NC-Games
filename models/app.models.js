@@ -72,13 +72,17 @@ const addCommentToReview = (review_id, { username, body }) => {
     });
 };
 
+const fetchUsers = () => {
+  return db.query("SELECT * FROM users;").then(({ rows }) => {
+    return rows;
+  });
+};
+
 module.exports = {
   fetchCategories,
-
   fetchReviews,
-
   fetchReviewsById,
-
   fetchCommentsByReviewId,
   addCommentToReview,
+  fetchUsers,
 };

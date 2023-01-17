@@ -258,7 +258,7 @@ describe("POST /api/reviews/:review_id/comments", () => {
       });
   });
 });
-describe.only("PATCH /api/reviews/:review_id", () => {
+describe("PATCH /api/reviews/:review_id", () => {
   it("should return 201 with the updated review object", () => {
     return request(app)
       .patch("/api/reviews/2")
@@ -293,6 +293,12 @@ describe.only("PATCH /api/reviews/:review_id", () => {
         expect(rows[0].votes).toBe(7);
       });
   });
+  it("should ignore extra keys on the request body if present", () => {
+    return request(app)
+      .patch("/api/reviews/2")
+      .send({ inc_votes: 2, test_key: "TEST" })
+      .expect(201);
+  });
   it("should return 404 when attempting to update the votes on a review that does not exist", () => {
     return request(app)
       .patch("/api/reviews/999")
@@ -317,12 +323,12 @@ describe.only("PATCH /api/reviews/:review_id", () => {
         expect(body.message).toBe("invalid data type");
       });
   });
-  // it("should return 400 when inc_votes is missing", () => {
-  //   return request(app)
-  //     .patch("/api/reviews/2")
-  //     .send({})
-  //     .then(({ body }) => {
-  //       expect(body.message).toBe("bad request");
-  //     });
-  // });
+  it("should return 400 when inc_votes is missing", () => {
+    return request(app)
+      .patch("/api/reviews/2")
+      .send({})
+      .then(({ body }) => {
+        expect(body.message).toBe("bad request");
+      });
+  });
 });

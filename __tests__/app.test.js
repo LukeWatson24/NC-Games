@@ -339,7 +339,7 @@ describe("GET /api/users", () => {
   });
 });
 describe("GET /api", () => {
-  it("should return the endpoints.json file", () => {
+  it("should return the contents of the endpoints.json file", () => {
     return request(app)
       .get("/api")
       .expect(200)

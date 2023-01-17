@@ -286,7 +286,7 @@ describe("PATCH /api/reviews/:review_id", () => {
     return request(app)
       .patch("/api/reviews/2")
       .send({ inc_votes: 2, test_key: "TEST" })
-      .expect(201);
+      .expect(200);
   });
   it("should return 404 when attempting to update the votes on a review that does not exist", () => {
     return request(app)

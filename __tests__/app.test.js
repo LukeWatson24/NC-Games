@@ -180,6 +180,14 @@ describe("GET /api/reviews/:review_id", () => {
         expect(body.message).toBe("invalid data type");
       });
   });
+  test("the returned review should have a comment_count property", () => {
+    return request(app)
+      .get("/api/reviews/2")
+      .then(({ body }) => {
+        const { review } = body;
+        expect(review).toHaveProperty("comment_count", 3);
+      });
+  });
 });
 
 describe("GET /api/reviews/:review_id/comments", () => {

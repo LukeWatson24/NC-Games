@@ -6,6 +6,7 @@ const {
   addCommentToReview,
   updateReviewVotes,
   fetchUsers,
+  removeComment,
   fetchEndpoints,
 } = require("../models/app.models");
 
@@ -20,7 +21,8 @@ const getCategories = (req, res, next) => {
 };
 
 const getReviews = (req, res, next) => {
-  fetchReviews()
+  const queryObj = ({ category, sort_by, order } = req.query);
+  fetchReviews(queryObj)
     .then((reviews) => {
       res.status(200).send({ reviews });
     })
@@ -87,6 +89,17 @@ const getUsers = (req, res, next) => {
     });
 };
 
+const deleteComment = (req, res, next) => {
+  const { comment_id } = req.params;
+  removeComment(comment_id)
+    .then(() => {
+      res.sendStatus(204);
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
 const getEndpoints = (req, res, next) => {
   fetchEndpoints()
     .then((endpoints) => {
@@ -105,5 +118,6 @@ module.exports = {
   postComment,
   patchReviewVotes,
   getUsers,
+  deleteComment,
   getEndpoints,
 };

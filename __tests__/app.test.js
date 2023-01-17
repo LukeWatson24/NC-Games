@@ -72,8 +72,74 @@ describe("GET /api/reviews", () => {
         });
       });
   });
-});
+  test("only returns reviews of a given category when queried by category", () => {
+    return request(app)
+      .get("/api/reviews?category=dexterity")
+      .then(({ body }) => {
+        const { reviews } = body;
+        reviews.forEach((review) => {
+          expect(review.category).toBe("dexterity");
+        });
+      });
+  });
+  it("should return 404 when no matching category is found", () => {
+    return request(app)
+      .get("/api/reviews?category=test")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.message).toEqual("category not found");
+      });
+  });
+  test("sorts by a given column name if the sort_by query is provided", () => {
+    const validSoryBy = [
+      "title",
+      "designer",
+      "owner",
+      "review_img_url",
+      "category",
+      "comment_count",
+      "votes",
+    ];
+    return Promise.all(
+      validSoryBy.map((column) => {
+        return request(app)
+          .get(`/api/reviews?sort_by=${column}`)
+          .expect(200)
+          .then(({ body }) => {
+            const { reviews } = body;
+            expect(reviews).toBeSorted({ key: column, descending: true });
+          });
+      })
+    );
+  });
+  test("orders results correctly when the order query is provided", () => {
+    return request(app)
+      .get("/api/reviews?sort_by=votes&order=ASC")
+      .then(({ body }) => {
+        const { reviews } = body;
+        expect(reviews).toBeSorted({ key: "votes", descending: false });
+      });
+  });
 
+  it("should ignore invalid values for sort_by", () => {
+    return request(app)
+      .get("/api/reviews?sort_by=test")
+      .expect(200)
+      .then(({ body }) => {
+        const { reviews } = body;
+        expect(reviews).toBeSorted({ key: "created_at", descending: true });
+      });
+  });
+  it("should ignore invalid values for order", () => {
+    return request(app)
+      .get("/api/reviews?order=test")
+      .expect(200)
+      .then(({ body }) => {
+        const { reviews } = body;
+        expect(reviews).toBeSorted({ key: "created_at", descending: true });
+      });
+  });
+});
 describe("GET /api/reviews/:review_id", () => {
   it("should return 200 with an object containing the correct keys", () => {
     return request(app)
@@ -113,6 +179,14 @@ describe("GET /api/reviews/:review_id", () => {
       .expect(400)
       .then(({ body }) => {
         expect(body.message).toBe("invalid data type");
+      });
+  });
+  test("the returned review should have a comment_count property", () => {
+    return request(app)
+      .get("/api/reviews/2")
+      .then(({ body }) => {
+        const { review } = body;
+        expect(review).toHaveProperty("comment_count", 3);
       });
   });
 });
@@ -335,6 +409,43 @@ describe("GET /api/users", () => {
           expect(user).toHaveProperty("name", expect.any(String));
           expect(user).toHaveProperty("avatar_url", expect.any(String));
         });
+      });
+  });
+});
+describe("DELETE /api/comments/:comment_id", () => {
+  it("should return 204 with no content", () => {
+    return request(app)
+      .delete("/api/comments/3")
+      .expect(204)
+      .then(({ body }) => {
+        expect(body).toEqual({});
+      });
+  });
+  it("should remove the comment from the database", () => {
+    return request(app)
+      .delete("/api/comments/3")
+      .expect(204)
+      .then(() => {
+        return db.query("SELECT * FROM comments WHERE comment_id = 3;");
+      })
+      .then(({ rowCount }) => {
+        expect(rowCount).toEqual(0);
+      });
+  });
+  it("should return 404 if the provided comment id is not found", () => {
+    return request(app)
+      .delete("/api/comments/999")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.message).toBe("id not found");
+      });
+  });
+  it("should return 400 if the data type for comment_id is incorrect", () => {
+    return request(app)
+      .delete("/api/comments/test")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("invalid data type");
       });
   });
 });

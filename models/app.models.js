@@ -1,4 +1,5 @@
 const db = require("../db/connection");
+const { formatReviewsQuery } = require("../utils/app.utils");
 const fs = require("fs/promises");
 const path = require("path");
 
@@ -8,26 +9,35 @@ const fetchCategories = () => {
   });
 };
 
-const fetchReviews = () => {
-  return db
-    .query(
-      `
-      SELECT
-      owner, title, reviews.review_id, category, review_img_url, reviews.created_at, reviews.votes, designer, COUNT(comments.review_id)::INT AS comment_count
-      FROM reviews
-      LEFT JOIN comments ON comments.review_id = reviews.review_id
-      GROUP BY reviews.review_id
-      ORDER BY reviews.created_at DESC;
-      `
-    )
-    .then(({ rows }) => {
+const fetchReviews = (queries) => {
+  const { queryString, categoryQuery } = formatReviewsQuery(queries);
+  const categoryCheck =
+    categoryQuery.length === 0
+      ? { rowCount: null }
+      : db.query("SELECT * FROM categories WHERE slug = $1;", categoryQuery);
+  return Promise.all([
+    db.query(queryString, categoryQuery),
+    categoryCheck,
+  ]).then(([{ rows }, { rowCount }]) => {
+    if (rowCount === 0) {
+      return Promise.reject({ status: 404, message: "category not found" });
+    } else {
       return rows;
-    });
+    }
+  });
 };
 
 const fetchReviewsById = (review_id) => {
   return db
-    .query(`SELECT * FROM reviews WHERE review_id = $1;`, [review_id])
+    .query(
+      `
+    SELECT reviews.*, COUNT(comments.review_id)::INT AS comment_count
+    FROM reviews
+    LEFT JOIN comments ON comments.review_id = reviews.review_id
+    WHERE reviews.review_id = $1
+    GROUP BY reviews.review_id;`,
+      [review_id]
+    )
     .then(({ rows }) => {
       if (rows.length === 0) {
         return Promise.reject({ status: 404, message: "id not found" });
@@ -96,6 +106,18 @@ const fetchUsers = () => {
   });
 };
 
+const removeComment = (comment_id) => {
+  return db
+    .query("DELETE FROM comments WHERE comment_id = $1 RETURNING *;", [
+      comment_id,
+    ])
+    .then(({ rowCount }) => {
+      if (rowCount === 0) {
+        return Promise.reject({ status: 404, message: "id not found" });
+      }
+    });
+};
+
 const fetchEndpoints = () => {
   return fs
     .readFile(path.resolve(__dirname, "../endpoints.json"), "utf-8")
@@ -112,5 +134,6 @@ module.exports = {
   addCommentToReview,
   updateReviewVotes,
   fetchUsers,
+  removeComment,
   fetchEndpoints,
 };

@@ -1,4 +1,5 @@
 const db = require("../db/connection");
+const { formatReviewsQuery } = require("../utils/app.utils");
 
 const fetchCategories = () => {
   return db.query(`SELECT * FROM categories;`).then(({ rows }) => {
@@ -6,21 +7,11 @@ const fetchCategories = () => {
   });
 };
 
-const fetchReviews = ({ category, sort_by = "created_at", order = "DESC" }) => {
-  return db
-    .query(
-      `
-      SELECT
-      owner, title, reviews.review_id, category, review_img_url, reviews.created_at, reviews.votes, designer, COUNT(comments.review_id)::INT AS comment_count
-      FROM reviews
-      LEFT JOIN comments ON comments.review_id = reviews.review_id
-      GROUP BY reviews.review_id
-      ORDER BY reviews.created_at DESC;
-      `
-    )
-    .then(({ rows }) => {
-      return rows;
-    });
+const fetchReviews = (queries) => {
+  const { queryString, categoryQuery } = formatReviewsQuery(queries);
+  return db.query(queryString, categoryQuery).then(({ rows }) => {
+    return rows;
+  });
 };
 
 const fetchReviewsById = (review_id) => {
@@ -72,13 +63,34 @@ const addCommentToReview = (review_id, { username, body }) => {
     });
 };
 
+const updateReviewVotes = (review_id, inc_votes) => {
+  return db
+    .query(
+      `
+    UPDATE reviews
+    SET votes = votes + $1
+    WHERE review_id = $2
+    RETURNING *;
+    `,
+      [inc_votes, review_id]
+    )
+    .then(({ rows }) => {
+      return rows[0];
+    });
+};
+
+const fetchUsers = () => {
+  return db.query("SELECT * FROM users;").then(({ rows }) => {
+    return rows;
+  });
+};
+
 module.exports = {
   fetchCategories,
-
   fetchReviews,
-
   fetchReviewsById,
-
   fetchCommentsByReviewId,
   addCommentToReview,
+  updateReviewVotes,
+  fetchUsers,
 };

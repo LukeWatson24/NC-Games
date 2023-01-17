@@ -6,6 +6,7 @@ const {
   addCommentToReview,
   updateReviewVotes,
   fetchUsers,
+  fetchEndpoints,
 } = require("../models/app.models");
 
 const getCategories = (req, res, next) => {
@@ -86,6 +87,16 @@ const getUsers = (req, res, next) => {
     });
 };
 
+const getEndpoints = (req, res, next) => {
+  fetchEndpoints()
+    .then((endpoints) => {
+      res.status(200).send(endpoints);
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
 module.exports = {
   getCategories,
   getReviews,
@@ -94,4 +105,5 @@ module.exports = {
   postComment,
   patchReviewVotes,
   getUsers,
+  getEndpoints,
 };

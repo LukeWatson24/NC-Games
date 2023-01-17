@@ -94,6 +94,8 @@ const fetchUsers = () => {
   });
 };
 
+const fetchEndpoints = () => {};
+
 module.exports = {
   fetchCategories,
   fetchReviews,
@@ -102,4 +104,5 @@ module.exports = {
   addCommentToReview,
   updateReviewVotes,
   fetchUsers,
+  fetchEndpoints,
 };

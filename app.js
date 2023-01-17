@@ -7,6 +7,7 @@ const {
   postComment,
   patchReviewVotes,
   getUsers,
+  getEndpoints,
 } = require("./controllers/app.controllers");
 const {
   pathNotFound,
@@ -25,6 +26,7 @@ app.get("/api/reviews/:review_id/comments", getCommentsByReviewId);
 app.post("/api/reviews/:review_id/comments", postComment);
 app.patch("/api/reviews/:review_id", patchReviewVotes);
 app.get("/api/users", getUsers);
+app.get("/api", getEndpoints);
 
 app.all("/*", pathNotFound);
 

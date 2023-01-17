@@ -411,3 +411,40 @@ describe("GET /api/users", () => {
       });
   });
 });
+describe("DELETE /api/comments/:comment_id", () => {
+  it("should return 204 with no content", () => {
+    return request(app)
+      .delete("/api/comments/3")
+      .expect(204)
+      .then(({ body }) => {
+        expect(body).toEqual({});
+      });
+  });
+  it("should remove the comment from the database", () => {
+    return request(app)
+      .delete("/api/comments/3")
+      .expect(204)
+      .then(() => {
+        return db.query("SELECT * FROM comments WHERE comment_id = 3;");
+      })
+      .then(({ rowCount }) => {
+        expect(rowCount).toEqual(0);
+      });
+  });
+  it("should return 404 if the provided comment id is not found", () => {
+    return request(app)
+      .delete("/api/comments/999")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.message).toBe("id not found");
+      });
+  });
+  it("should return 400 if the data type for comment_id is incorrect", () => {
+    return request(app)
+      .delete("/api/comments/test")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("invalid data type");
+      });
+  });
+});

@@ -96,7 +96,6 @@ describe("GET /api/reviews/:review_id", () => {
         expect(review).toHaveProperty("votes", 5);
         expect(review).toHaveProperty("created_at", "2021-01-18T10:01:41.251Z");
         expect(Date.parse(review.created_at)).toBe(1610964101251);
-        expect(review).toHaveProperty("comment_count", 3);
       });
   });
   it("should return 404 with correct message when a review matching the provided id is not found", () => {
@@ -113,6 +112,14 @@ describe("GET /api/reviews/:review_id", () => {
       .expect(400)
       .then(({ body }) => {
         expect(body.message).toBe("invalid data type");
+      });
+  });
+  test("the returned review should have a comment_count property", () => {
+    return request(app)
+      .get("/api/reviews/2")
+      .then(({ body }) => {
+        const { review } = body;
+        expect(review).toHaveProperty("comment_count", 3);
       });
   });
 });

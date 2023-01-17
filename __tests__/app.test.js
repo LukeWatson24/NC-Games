@@ -73,7 +73,7 @@ describe("GET /api/reviews", () => {
   });
 });
 
-describe("GET /api/reviews/:review_id", () => {
+describe.only("GET /api/reviews/:review_id", () => {
   it("should return 200 with an object containing the correct keys", () => {
     return request(app)
       .get("/api/reviews/2")
@@ -96,6 +96,7 @@ describe("GET /api/reviews/:review_id", () => {
         expect(review).toHaveProperty("votes", 5);
         expect(review).toHaveProperty("created_at", "2021-01-18T10:01:41.251Z");
         expect(Date.parse(review.created_at)).toBe(1610964101251);
+        expect(review).toHaveProperty("comment_count", 3);
       });
   });
   it("should return 404 with correct message when a review matching the provided id is not found", () => {

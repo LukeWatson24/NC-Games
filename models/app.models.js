@@ -1,5 +1,7 @@
 const db = require("../db/connection");
 const { formatReviewsQuery } = require("../utils/app.utils");
+const fs = require("fs/promises");
+const path = require("path");
 
 const fetchCategories = () => {
   return db.query(`SELECT * FROM categories;`).then(({ rows }) => {
@@ -116,6 +118,14 @@ const removeComment = (comment_id) => {
     });
 };
 
+const fetchEndpoints = () => {
+  return fs
+    .readFile(path.resolve(__dirname, "../endpoints.json"), "utf-8")
+    .then((endpoints) => {
+      return JSON.parse(endpoints);
+    });
+};
+
 module.exports = {
   fetchCategories,
   fetchReviews,
@@ -125,4 +135,5 @@ module.exports = {
   updateReviewVotes,
   fetchUsers,
   removeComment,
+  fetchEndpoints,
 };

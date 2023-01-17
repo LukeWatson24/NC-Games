@@ -73,7 +73,7 @@ describe("GET /api/reviews", () => {
   });
 });
 
-describe.only("GET /api/reviews/:review_id", () => {
+describe("GET /api/reviews/:review_id", () => {
   it("should return 200 with an object containing the correct keys", () => {
     return request(app)
       .get("/api/reviews/2")

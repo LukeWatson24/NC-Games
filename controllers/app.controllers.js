@@ -19,7 +19,8 @@ const getCategories = (req, res, next) => {
 };
 
 const getReviews = (req, res, next) => {
-  fetchReviews()
+  const queryObj = ({ category, sort_by, order } = req.query);
+  fetchReviews(queryObj)
     .then((reviews) => {
       res.status(200).send({ reviews });
     })

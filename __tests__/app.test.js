@@ -71,8 +71,74 @@ describe("GET /api/reviews", () => {
         });
       });
   });
-});
+  test("only returns reviews of a given category when queried by category", () => {
+    return request(app)
+      .get("/api/reviews?category=dexterity")
+      .then(({ body }) => {
+        const { reviews } = body;
+        reviews.forEach((review) => {
+          expect(review.category).toBe("dexterity");
+        });
+      });
+  });
+  it("should return 404 when no matching category is found", () => {
+    return request(app)
+      .get("/api/reviews?category=test")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.message).toEqual("category not found");
+      });
+  });
+  test("sorts by a given column name if the sort_by query is provided", () => {
+    const validSoryBy = [
+      "title",
+      "designer",
+      "owner",
+      "review_img_url",
+      "category",
+      "comment_count",
+      "votes",
+    ];
+    return Promise.all(
+      validSoryBy.map((column) => {
+        return request(app)
+          .get(`/api/reviews?sort_by=${column}`)
+          .expect(200)
+          .then(({ body }) => {
+            const { reviews } = body;
+            expect(reviews).toBeSorted({ key: column, descending: true });
+          });
+      })
+    );
+  });
+  test("orders results correctly when the order query is provided", () => {
+    return request(app)
+      .get("/api/reviews?sort_by=votes&order=ASC")
+      .then(({ body }) => {
+        const { reviews } = body;
+        expect(reviews).toBeSorted({ key: "votes", descending: false });
+      });
+  });
 
+  it("should ignore invalid values for sort_by", () => {
+    return request(app)
+      .get("/api/reviews?sort_by=test")
+      .expect(200)
+      .then(({ body }) => {
+        const { reviews } = body;
+        expect(reviews).toBeSorted({ key: "created_at", descending: true });
+      });
+  });
+  it("should ignore invalid values for order", () => {
+    return request(app)
+      .get("/api/reviews?order=test")
+      .expect(200)
+      .then(({ body }) => {
+        const { reviews } = body;
+        expect(reviews).toBeSorted({ key: "created_at", descending: true });
+      });
+  });
+});
 describe("GET /api/reviews/:review_id", () => {
   it("should return 200 with an object containing the correct keys", () => {
     return request(app)

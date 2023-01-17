@@ -29,7 +29,7 @@ describe("GET /api/categories", () => {
       .get("/api/categories")
       .expect(200)
       .then(({ body }) => {
-        const categories = body.categories;
+        const { categories } = body;
         expect(categories.length).toBeGreaterThan(0);
         categories.forEach((category) => {
           expect(category).toHaveProperty("slug", expect.any(String));
@@ -45,7 +45,7 @@ describe("GET /api/reviews", () => {
       .get("/api/reviews")
       .expect(200)
       .then(({ body }) => {
-        const reviews = body.reviews;
+        const { reviews } = body;
         expect(reviews.length).toBeGreaterThan(0);
         reviews.forEach((review) => {
           expect(review).toHaveProperty("owner", expect.any(String));
@@ -64,7 +64,7 @@ describe("GET /api/reviews", () => {
     return request(app)
       .get("/api/reviews")
       .then(({ body }) => {
-        const reviews = body.reviews;
+        const { reviews } = body;
         expect(reviews).toBeSorted({
           key: "created_at",
           descending: true,
@@ -79,7 +79,7 @@ describe("GET /api/reviews/:review_id", () => {
       .get("/api/reviews/2")
       .expect(200)
       .then(({ body }) => {
-        const review = body.review;
+        const { review } = body;
         expect(review).toHaveProperty("review_id", 2);
         expect(review).toHaveProperty("title", "Jenga");
         expect(review).toHaveProperty("designer", "Leslie Scott");
@@ -122,7 +122,7 @@ describe("GET /api/reviews/:review_id/comments", () => {
       .get("/api/reviews/3/comments")
       .expect(200)
       .then(({ body }) => {
-        const comments = body.comments;
+        const { comments } = body;
         expect(Array.isArray(comments)).toBe(true);
         expect(comments.length).toBeGreaterThan(0);
         comments.forEach((comment) => {
@@ -139,7 +139,7 @@ describe("GET /api/reviews/:review_id/comments", () => {
     return request(app)
       .get("/api/reviews/3/comments")
       .then(({ body }) => {
-        const comments = body.comments;
+        const { comments } = body;
         expect(comments).toBeSorted({ key: "created_at", descending: true });
       });
   });
@@ -147,7 +147,7 @@ describe("GET /api/reviews/:review_id/comments", () => {
     return request(app)
       .get("/api/reviews/1/comments")
       .then(({ body }) => {
-        const comments = body.comments;
+        const { comments } = body;
         expect(comments).toEqual([]);
       });
   });
@@ -165,6 +165,96 @@ describe("GET /api/reviews/:review_id/comments", () => {
       .expect(400)
       .then(({ body }) => {
         expect(body.message).toBe("invalid data type");
+      });
+  });
+});
+
+describe("POST /api/reviews/:review_id/comments", () => {
+  it("should return 201 with the created comment object", () => {
+    const newComment = {
+      username: "mallionaire",
+      body: "TEST COMMENT",
+    };
+    return request(app)
+      .post("/api/reviews/4/comments")
+      .send(newComment)
+      .expect(201)
+      .then(({ body }) => {
+        const { comment } = body;
+        expect(comment).toHaveProperty("comment_id", expect.any(Number));
+        expect(comment).toHaveProperty("votes", 0);
+        expect(comment).toHaveProperty("created_at", expect.any(String));
+        expect(comment).toHaveProperty("author", "mallionaire");
+        expect(comment).toHaveProperty("body", "TEST COMMENT");
+        expect(comment).toHaveProperty("review_id", 4);
+      });
+  });
+  it("should add the comment to the database", () => {
+    const newComment = {
+      username: "mallionaire",
+      body: "TEST COMMENT",
+    };
+    return request(app)
+      .post("/api/reviews/4/comments")
+      .send(newComment)
+      .then(() => {
+        return db.query("SELECT * FROM comments WHERE review_id = 4;");
+      })
+      .then(({ rows }) => {
+        expect(rows.length).toBe(1);
+        expect(rows[0].body).toBe("TEST COMMENT");
+        expect(rows[0].author).toBe("mallionaire");
+      });
+  });
+  it("should return 400 with correct message when a review matching the provided id is not found", () => {
+    const newComment = {
+      username: "mallionaire",
+      body: "TEST COMMENT",
+    };
+    return request(app)
+      .post("/api/reviews/999/comments")
+      .send(newComment)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("bad request");
+      });
+  });
+  it("should return 400 with correct message if data type for review_id is incorrect", () => {
+    const newComment = {
+      username: "mallionaire",
+      body: "TEST COMMENT",
+    };
+    return request(app)
+      .post("/api/reviews/test/comments")
+      .send(newComment)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("invalid data type");
+      });
+  });
+  it("should return 400 if the username does not exist", () => {
+    const newComment = {
+      username: "TEST USERNAME",
+      body: "TEST COMMENT",
+    };
+    return request(app)
+      .post("/api/reviews/4/comments")
+      .send(newComment)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("bad request");
+      });
+  });
+  it("should return 400 if the request body has missing keys", () => {
+    const newComment = {
+      username: "mallionaire",
+    };
+    return request(app)
+      .post("/api/reviews/4/comments")
+      .send(newComment)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("bad request");
       });
   });
 });

@@ -346,6 +346,17 @@ describe("DELETE /api/comments/:comment_id", () => {
         expect(body).toEqual({});
       });
   });
+  it("should remove the comment from the database", () => {
+    return request(app)
+      .delete("/api/comments/3")
+      .expect(204)
+      .then(() => {
+        return db.query("SELECT * FROM comments WHERE comment_id = 3;");
+      })
+      .then(({ rowCount }) => {
+        expect(rowCount).toEqual(0);
+      });
+  });
   it("should return 404 if the provided comment id is not found", () => {
     return request(app)
       .delete("/api/comments/999")

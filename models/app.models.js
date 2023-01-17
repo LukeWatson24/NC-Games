@@ -72,6 +72,22 @@ const addCommentToReview = (review_id, { username, body }) => {
     });
 };
 
+const updateReviewVotes = (review_id, inc_votes) => {
+  return db
+    .query(
+      `
+    UPDATE reviews
+    SET votes = votes + $1
+    WHERE review_id = $2
+    RETURNING *;
+    `,
+      [inc_votes, review_id]
+    )
+    .then(({ rows }) => {
+      return rows[0];
+    });
+};
+
 const fetchUsers = () => {
   return db.query("SELECT * FROM users;").then(({ rows }) => {
     return rows;
@@ -84,5 +100,6 @@ module.exports = {
   fetchReviewsById,
   fetchCommentsByReviewId,
   addCommentToReview,
+  updateReviewVotes,
   fetchUsers,
 };

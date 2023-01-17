@@ -4,6 +4,7 @@ const pathNotFound = (req, res, next) => {
 };
 
 const noResults = (err, req, res, next) => {
+  console.log(err);
   if (err.status === 404) {
     res.status(err.status).send({ message: err.message });
   } else {

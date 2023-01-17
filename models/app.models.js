@@ -57,9 +57,26 @@ const fetchCommentsByReviewId = (review_id) => {
     });
 };
 
+const updateReviewVotes = (review_id, inc_votes) => {
+  return db
+    .query(
+      `
+    UPDATE reviews
+    SET votes = votes + $1
+    WHERE review_id = $2
+    RETURNING *;
+    `,
+      [inc_votes, review_id]
+    )
+    .then(({ rows }) => {
+      return rows[0];
+    });
+};
+
 module.exports = {
   fetchCategories,
   fetchReviews,
   fetchReviewsById,
   fetchCommentsByReviewId,
+  updateReviewVotes,
 };

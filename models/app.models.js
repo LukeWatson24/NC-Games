@@ -6,7 +6,7 @@ const fetchCategories = () => {
   });
 };
 
-const fetchReviews = () => {
+const fetchReviews = ({ category, sort_by = "created_at", order = "DESC" }) => {
   return db
     .query(
       `

@@ -71,8 +71,17 @@ describe("GET /api/reviews", () => {
         });
       });
   });
+  // test.only("only returns reviews of a given category when queried by category", () => {
+  //   return request(app)
+  //     .get("/api/reviews?category=dexterity")
+  //     .then(({ body }) => {
+  //       const { reviews } = body;
+  //       reviews.forEach((review) => {
+  //         expect(review.category).toBe("dexterity");
+  //       });
+  //     });
+  // });
 });
-
 describe("GET /api/reviews/:review_id", () => {
   it("should return 200 with an object containing the correct keys", () => {
     return request(app)

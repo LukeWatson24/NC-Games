@@ -29,7 +29,7 @@ describe("GET /api/categories", () => {
       .get("/api/categories")
       .expect(200)
       .then(({ body }) => {
-        const categories = body.categories;
+        const { categories } = body;
         expect(categories.length).toBeGreaterThan(0);
         categories.forEach((category) => {
           expect(category).toHaveProperty("slug", expect.any(String));
@@ -45,7 +45,7 @@ describe("GET /api/reviews", () => {
       .get("/api/reviews")
       .expect(200)
       .then(({ body }) => {
-        const reviews = body.reviews;
+        const { reviews } = body;
         expect(reviews.length).toBeGreaterThan(0);
         reviews.forEach((review) => {
           expect(review).toHaveProperty("owner", expect.any(String));
@@ -64,7 +64,7 @@ describe("GET /api/reviews", () => {
     return request(app)
       .get("/api/reviews")
       .then(({ body }) => {
-        const reviews = body.reviews;
+        const { reviews } = body;
         expect(reviews).toBeSorted({
           key: "created_at",
           descending: true,
@@ -79,7 +79,7 @@ describe("GET /api/reviews/:review_id", () => {
       .get("/api/reviews/2")
       .expect(200)
       .then(({ body }) => {
-        const review = body.review;
+        const { review } = body;
         expect(review).toHaveProperty("review_id", 2);
         expect(review).toHaveProperty("title", "Jenga");
         expect(review).toHaveProperty("designer", "Leslie Scott");
@@ -122,7 +122,7 @@ describe("GET /api/reviews/:review_id/comments", () => {
       .get("/api/reviews/3/comments")
       .expect(200)
       .then(({ body }) => {
-        const comments = body.comments;
+        const { comments } = body;
         expect(Array.isArray(comments)).toBe(true);
         expect(comments.length).toBeGreaterThan(0);
         comments.forEach((comment) => {
@@ -139,7 +139,7 @@ describe("GET /api/reviews/:review_id/comments", () => {
     return request(app)
       .get("/api/reviews/3/comments")
       .then(({ body }) => {
-        const comments = body.comments;
+        const { comments } = body;
         expect(comments).toBeSorted({ key: "created_at", descending: true });
       });
   });
@@ -147,7 +147,7 @@ describe("GET /api/reviews/:review_id/comments", () => {
     return request(app)
       .get("/api/reviews/1/comments")
       .then(({ body }) => {
-        const comments = body.comments;
+        const { comments } = body;
         expect(comments).toEqual([]);
       });
   });
@@ -180,7 +180,7 @@ describe("POST /api/reviews/:review_id/comments", () => {
       .send(newComment)
       .expect(201)
       .then(({ body }) => {
-        const comment = body.comment;
+        const { comment } = body;
         expect(comment).toHaveProperty("comment_id", expect.any(Number));
         expect(comment).toHaveProperty("votes", 0);
         expect(comment).toHaveProperty("created_at", expect.any(String));

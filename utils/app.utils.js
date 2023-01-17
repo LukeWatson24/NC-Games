@@ -9,6 +9,7 @@ exports.formatReviewsQuery = ({
     "owner",
     "review_img_url",
     "category",
+    "comment_count",
     "votes",
   ];
   const allowedOrder = ["asc", "desc"];
@@ -26,7 +27,11 @@ exports.formatReviewsQuery = ({
   queryString += " GROUP BY reviews.review_id";
 
   if (allowedSort_by.includes(sort_by.toLowerCase())) {
-    queryString += ` ORDER BY reviews.${sort_by}`;
+    if (sort_by === "comment_count") {
+      queryString += ` ORDER BY ${sort_by}`;
+    } else {
+      queryString += ` ORDER BY reviews.${sort_by}`;
+    }
   } else {
     queryString += ` ORDER BY reviews.created_at`;
   }

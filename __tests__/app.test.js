@@ -92,10 +92,10 @@ describe("GET /api/reviews", () => {
   });
   test("sorts by a given column name if the sort_by query is provided", () => {
     return request(app)
-      .get("/api/reviews?sort_by=votes")
+      .get("/api/reviews?sort_by=comment_count")
       .then(({ body }) => {
         const { reviews } = body;
-        expect(reviews).toBeSorted({ key: "votes", descending: true });
+        expect(reviews).toBeSorted({ key: "comment_count", descending: true });
       });
   });
   test("orders results correctly when the order query is provided", () => {

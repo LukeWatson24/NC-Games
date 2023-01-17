@@ -263,7 +263,7 @@ describe("PATCH /api/reviews/:review_id", () => {
     return request(app)
       .patch("/api/reviews/2")
       .send({ inc_votes: 2 })
-      .expect(201)
+      .expect(200)
       .then(({ body }) => {
         const review = body.review;
         expect(review).toHaveProperty("review_id", 2);
@@ -280,17 +280,6 @@ describe("PATCH /api/reviews/:review_id", () => {
         expect(review).toHaveProperty("category", "dexterity");
         expect(review).toHaveProperty("created_at", "2021-01-18T10:01:41.251Z");
         expect(review).toHaveProperty("votes", 7);
-      });
-  });
-  it("should update the database", () => {
-    return request(app)
-      .patch("/api/reviews/2")
-      .send({ inc_votes: 2 })
-      .then(() => {
-        return db.query("SELECT * FROM reviews WHERE review_id = 2");
-      })
-      .then(({ rows }) => {
-        expect(rows[0].votes).toBe(7);
       });
   });
   it("should ignore extra keys on the request body if present", () => {

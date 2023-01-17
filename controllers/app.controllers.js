@@ -68,7 +68,7 @@ const patchReviewVotes = (req, res, next) => {
     fetchReviewsById(review_id),
   ])
     .then(([review]) => {
-      res.status(201).send({ review });
+      res.status(200).send({ review });
     })
     .catch((err) => {
       next(err);

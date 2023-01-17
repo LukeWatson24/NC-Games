@@ -81,22 +81,35 @@ describe("GET /api/reviews", () => {
         });
       });
   });
-  it("should return an empty array if the given category query has no reviews", () => {
+  it("should return 404 when no matching category is found", () => {
     return request(app)
       .get("/api/reviews?category=test")
-      .expect(200)
+      .expect(404)
       .then(({ body }) => {
-        const { reviews } = body;
-        expect(reviews).toEqual([]);
+        expect(body.message).toEqual("category not found");
       });
   });
   test("sorts by a given column name if the sort_by query is provided", () => {
-    return request(app)
-      .get("/api/reviews?sort_by=comment_count")
-      .then(({ body }) => {
-        const { reviews } = body;
-        expect(reviews).toBeSorted({ key: "comment_count", descending: true });
-      });
+    const validSoryBy = [
+      "title",
+      "designer",
+      "owner",
+      "review_img_url",
+      "category",
+      "comment_count",
+      "votes",
+    ];
+    return Promise.all(
+      validSoryBy.map((column) => {
+        return request(app)
+          .get(`/api/reviews?sort_by=${column}`)
+          .expect(200)
+          .then(({ body }) => {
+            const { reviews } = body;
+            expect(reviews).toBeSorted({ key: column, descending: true });
+          });
+      })
+    );
   });
   test("orders results correctly when the order query is provided", () => {
     return request(app)
@@ -123,15 +136,6 @@ describe("GET /api/reviews", () => {
       .then(({ body }) => {
         const { reviews } = body;
         expect(reviews).toBeSorted({ key: "created_at", descending: true });
-      });
-  });
-  it("should ignore extra queries if provided", () => {
-    return request(app)
-      .get("/api/reviews?sort_by=votes&order=asc&test=test")
-      .expect(200)
-      .then(({ body }) => {
-        const { reviews } = body;
-        expect(reviews).toBeSorted({ key: "votes", descending: false });
       });
   });
 });

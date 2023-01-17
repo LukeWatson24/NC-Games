@@ -9,8 +9,19 @@ const fetchCategories = () => {
 
 const fetchReviews = (queries) => {
   const { queryString, categoryQuery } = formatReviewsQuery(queries);
-  return db.query(queryString, categoryQuery).then(({ rows }) => {
-    return rows;
+  const categoryCheck =
+    categoryQuery.length === 0
+      ? { rowCount: null }
+      : db.query("SELECT * FROM categories WHERE slug = $1;", categoryQuery);
+  return Promise.all([
+    db.query(queryString, categoryQuery),
+    categoryCheck,
+  ]).then(([{ rows }, { rowCount }]) => {
+    if (rowCount === 0) {
+      return Promise.reject({ status: 404, message: "category not found" });
+    } else {
+      return rows;
+    }
   });
 };
 

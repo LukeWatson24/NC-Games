@@ -8,6 +8,7 @@ const {
   fetchUsers,
   removeComment,
   fetchEndpoints,
+  fetchUserByUsername,
 } = require("../models/app.models");
 
 const getCategories = (req, res, next) => {
@@ -110,6 +111,17 @@ const getEndpoints = (req, res, next) => {
     });
 };
 
+const getUserByUsername = (req, res, next) => {
+  const { username } = req.params;
+  fetchUserByUsername(username)
+    .then((user) => {
+      res.status(200).send({ user });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
 module.exports = {
   getCategories,
   getReviews,
@@ -120,4 +132,5 @@ module.exports = {
   getUsers,
   deleteComment,
   getEndpoints,
+  getUserByUsername,
 };

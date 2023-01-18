@@ -459,3 +459,26 @@ describe("GET /api", () => {
       });
   });
 });
+describe("GET /api/users/:username", () => {
+  it("should return 200 with the correct user object", () => {
+    return request(app)
+      .get("/api/users/philippaclaire9")
+      .expect(200)
+      .then(({ body }) => {
+        const { user } = body;
+        expect(user.username).toBe("philippaclaire9");
+        expect(user.name).toBe("philippa");
+        expect(user.avatar_url).toBe(
+          "https://avatars2.githubusercontent.com/u/24604688?s=460&v=4"
+        );
+      });
+  });
+  it("should return 404 if the username is not found", () => {
+    return request(app)
+      .get("/api/users/test")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.message).toBe("username not found");
+      });
+  });
+});

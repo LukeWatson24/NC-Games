@@ -9,6 +9,7 @@ const {
   getUsers,
   deleteComment,
   getEndpoints,
+  getUserByUsername,
 } = require("./controllers/app.controllers");
 const {
   pathNotFound,
@@ -29,6 +30,8 @@ app.patch("/api/reviews/:review_id", patchReviewVotes);
 app.get("/api/users", getUsers);
 app.delete("/api/comments/:comment_id", deleteComment);
 app.get("/api", getEndpoints);
+
+app.get("/api/users/:username", getUserByUsername);
 
 app.all("/*", pathNotFound);
 

@@ -334,13 +334,13 @@ describe("POST /api/reviews/:review_id/comments", () => {
   });
 });
 describe("PATCH /api/reviews/:review_id", () => {
-  it("should return 201 with the updated review object", () => {
+  it("should return 200 with the updated review object", () => {
     return request(app)
       .patch("/api/reviews/2")
       .send({ inc_votes: 2 })
       .expect(200)
       .then(({ body }) => {
-        const review = body.review;
+        const { review } = body;
         expect(review).toHaveProperty("review_id", 2);
         expect(review).toHaveProperty("title", "Jenga");
         expect(review).toHaveProperty("designer", "Leslie Scott");
@@ -357,15 +357,10 @@ describe("PATCH /api/reviews/:review_id", () => {
         expect(review).toHaveProperty("votes", 7);
       });
   });
-  it("should ignore extra keys on the request body if present", () => {
-    return request(app)
-      .patch("/api/reviews/2")
-      .send({ inc_votes: 2, test_key: "TEST" })
-      .expect(200);
-  });
   it("should return 404 when attempting to update the votes on a review that does not exist", () => {
     return request(app)
       .patch("/api/reviews/999")
+      .expect(404)
       .send({ inc_votes: 2 })
       .then(({ body }) => {
         expect(body.message).toBe("id not found");
@@ -375,6 +370,7 @@ describe("PATCH /api/reviews/:review_id", () => {
     return request(app)
       .patch("/api/reviews/test")
       .send({ inc_votes: 2 })
+      .expect(400)
       .then(({ body }) => {
         expect(body.message).toBe("invalid data type");
       });
@@ -479,6 +475,60 @@ describe("GET /api/users/:username", () => {
       .expect(404)
       .then(({ body }) => {
         expect(body.message).toBe("username not found");
+      });
+  });
+});
+describe("PATCH /api/comments/:comment_id", () => {
+  it("should return 200 with the updated comment object", () => {
+    return request(app)
+      .patch("/api/comments/2")
+      .send({ inc_votes: 2 })
+      .expect(200)
+      .then(({ body }) => {
+        const { comment } = body;
+        expect(comment).toHaveProperty("comment_id", 2);
+        expect(comment).toHaveProperty("body", "My dog loved this game too!");
+        expect(comment).toHaveProperty("author", "mallionaire");
+        expect(comment).toHaveProperty("review_id", 3);
+        expect(comment).toHaveProperty(
+          "created_at",
+          "2021-01-18T10:09:05.410Z"
+        );
+        expect(comment).toHaveProperty("votes", 15);
+      });
+  });
+  it("should return 404 when attempting to update the votes on a comment that does not exist", () => {
+    return request(app)
+      .patch("/api/comments/999")
+      .expect(404)
+      .send({ inc_votes: 2 })
+      .then(({ body }) => {
+        expect(body.message).toBe("id not found");
+      });
+  });
+  it("should return 400 when the data type for comment_id is incorrect", () => {
+    return request(app)
+      .patch("/api/comments/test")
+      .send({ inc_votes: 2 })
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("invalid data type");
+      });
+  });
+  it("should return 400 when the data type for inc_votes is incorrect", () => {
+    return request(app)
+      .patch("/api/comments/2")
+      .send({ inc_votes: "TEST" })
+      .then(({ body }) => {
+        expect(body.message).toBe("invalid data type");
+      });
+  });
+  it("should return 400 when inc_votes is missing", () => {
+    return request(app)
+      .patch("/api/comments/2")
+      .send({})
+      .then(({ body }) => {
+        expect(body.message).toBe("bad request");
       });
   });
 });

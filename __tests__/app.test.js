@@ -379,6 +379,7 @@ describe("PATCH /api/reviews/:review_id", () => {
     return request(app)
       .patch("/api/reviews/2")
       .send({ inc_votes: "TEST" })
+      .expect(400)
       .then(({ body }) => {
         expect(body.message).toBe("invalid data type");
       });
@@ -387,6 +388,7 @@ describe("PATCH /api/reviews/:review_id", () => {
     return request(app)
       .patch("/api/reviews/2")
       .send({})
+      .expect(400)
       .then(({ body }) => {
         expect(body.message).toBe("bad request");
       });
@@ -519,6 +521,7 @@ describe("PATCH /api/comments/:comment_id", () => {
     return request(app)
       .patch("/api/comments/2")
       .send({ inc_votes: "TEST" })
+      .expect(400)
       .then(({ body }) => {
         expect(body.message).toBe("invalid data type");
       });
@@ -527,6 +530,7 @@ describe("PATCH /api/comments/:comment_id", () => {
     return request(app)
       .patch("/api/comments/2")
       .send({})
+      .expect(400)
       .then(({ body }) => {
         expect(body.message).toBe("bad request");
       });

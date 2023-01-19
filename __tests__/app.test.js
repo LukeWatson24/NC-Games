@@ -139,6 +139,68 @@ describe("GET /api/reviews", () => {
         expect(reviews).toBeSorted({ key: "created_at", descending: true });
       });
   });
+  it("should only return 10 results when the limit query is omitted", () => {
+    return request(app)
+      .get("/api/reviews")
+      .then(({ body }) => {
+        const { reviews } = body;
+        expect(reviews.length).toBe(10);
+      });
+  });
+  it("should limit the amount of returned results to the number provided by the limit query", () => {
+    return request(app)
+      .get("/api/reviews?limit=3")
+      .then(({ body }) => {
+        const { reviews } = body;
+        expect(reviews.length).toBe(3);
+      });
+  });
+  test("does not offset the results if the p query is omitted", () => {
+    return request(app)
+      .get("/api/reviews?sort_by=votes&order=desc&limit=5")
+      .then(({ body }) => {
+        const { reviews } = body;
+        reviews.forEach(({ votes }) => {
+          expect(votes).toBeLessThanOrEqual(100);
+          expect(votes).toBeGreaterThanOrEqual(9);
+        });
+      });
+  });
+  test("offsets results correctly when p query is provided", () => {
+    return request(app)
+      .get("/api/reviews?sort_by=votes&order=desc&limit=5&p=2")
+      .then(({ body }) => {
+        const { reviews } = body;
+        reviews.forEach(({ votes }) => {
+          expect(votes).toBeLessThanOrEqual(8);
+          expect(votes).toBeGreaterThanOrEqual(5);
+        });
+      });
+  });
+  test("response body has a total_count property with the total count of all reviews when no category query is provided", () => {
+    return request(app)
+      .get("/api/reviews")
+      .then(({ body }) => {
+        const { total_count } = body;
+        expect(total_count).toBe(13);
+      });
+  });
+  test("total_count property returns the correct count when the category query is provided", () => {
+    return request(app)
+      .get("/api/reviews?category=dexterity")
+      .then(({ body }) => {
+        const { total_count } = body;
+        expect(total_count).toBe(1);
+      });
+  });
+  test("total_count property is not affected by limit query", () => {
+    return request(app)
+      .get("/api/reviews?limit=2")
+      .then(({ body }) => {
+        const { total_count } = body;
+        expect(total_count).toBe(13);
+      });
+  });
 });
 describe("GET /api/reviews/:review_id", () => {
   it("should return 200 with an object containing the correct keys", () => {

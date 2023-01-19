@@ -13,19 +13,34 @@ const fetchCategories = () => {
 };
 
 const fetchReviews = (queries) => {
-  const { queryString, categoryQuery } = formatReviewsQuery(queries);
-  const categoryCheck =
-    categoryQuery.length === 0
-      ? { rowCount: null }
-      : db.query("SELECT * FROM categories WHERE slug = $1;", categoryQuery);
+  const { queryString, queryVals, totalCountStr } = formatReviewsQuery(queries);
+  // const categoryCheck =
+  //   queryVals.length === 2
+  //     ? { rowCount: null }
+  //     : db.query("SELECT * FROM categories WHERE slug = $1;", [queryVals[0]]);
+
+  let categoryCheck;
+  let totalCount;
+  if (queryVals.length === 2) {
+    categoryCheck = { rowCount: null };
+    totalCount = db.query(totalCountStr);
+  } else {
+    categoryCheck = db.query("SELECT * FROM categories WHERE slug = $1;", [
+      queryVals[0],
+    ]);
+    totalCount = db.query(totalCountStr, [queryVals[0]]);
+  }
+
   return Promise.all([
-    db.query(queryString, categoryQuery),
+    db.query(queryString, queryVals),
     categoryCheck,
-  ]).then(([{ rows }, { rowCount }]) => {
+    totalCount,
+  ]).then(([{ rows }, { rowCount }, count]) => {
     if (rowCount === 0) {
       return Promise.reject({ status: 404, message: "category not found" });
     } else {
-      return rows;
+      const { total_count } = count.rows[0];
+      return { reviews: rows, total_count };
     }
   });
 };

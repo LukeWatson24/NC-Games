@@ -11,6 +11,7 @@ const {
   fetchUserByUsername,
   updateCommentVotes,
   addReview,
+  addCategory,
 } = require("../models/app.models");
 
 const getCategories = (req, res, next) => {
@@ -158,6 +159,17 @@ const postReview = (req, res, next) => {
     });
 };
 
+const postCategory = (req, res, next) => {
+  const categoryObj = ({ slug, description } = req.body);
+  addCategory(categoryObj)
+    .then((category) => {
+      res.status(201).send({ category });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
 module.exports = {
   getCategories,
   getReviews,
@@ -171,4 +183,5 @@ module.exports = {
   getUserByUsername,
   patchCommentVotes,
   postReview,
+  postCategory,
 };

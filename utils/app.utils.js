@@ -2,6 +2,8 @@ exports.formatReviewsQuery = ({
   category,
   sort_by = "created_at",
   order = "desc",
+  limit = 10,
+  p = 1,
 }) => {
   const allowedSort_by = [
     "title",
@@ -13,15 +15,20 @@ exports.formatReviewsQuery = ({
     "votes",
   ];
   const allowedOrder = ["asc", "desc"];
-  const categoryQuery = [];
+  const queryShift = ["$1", "$2", "$3"];
+  const pageVal = (p - 1) * limit;
+  const queryVals = [];
   let queryString = `SELECT
     owner, title, reviews.review_id, category, review_img_url, reviews.created_at, reviews.votes, designer, COUNT(comments.review_id)::INT AS comment_count
     FROM reviews
     LEFT JOIN comments ON comments.review_id = reviews.review_id`;
+  let totalCountStr =
+    "SELECT COUNT(review_id)::INT as total_count FROM reviews";
 
   if (category !== undefined) {
-    categoryQuery.push(category);
-    queryString += " WHERE category = $1";
+    queryVals.push(category);
+    queryString += ` WHERE category = ${queryShift.shift()}`;
+    totalCountStr += ` WHERE category = $1;`;
   }
 
   queryString += " GROUP BY reviews.review_id";
@@ -37,12 +44,16 @@ exports.formatReviewsQuery = ({
   }
 
   if (allowedOrder.includes(order.toLowerCase())) {
-    queryString += ` ${order};`;
+    queryString += ` ${order}`;
   } else {
-    queryString += " desc;";
+    queryString += " desc";
   }
 
-  return { queryString, categoryQuery };
+  queryString += ` LIMIT ${queryShift.shift()} OFFSET ${queryShift.shift()};`;
+  queryVals.push(limit);
+  queryVals.push(pageVal);
+
+  return { queryString, queryVals, totalCountStr };
 };
 
 exports.formatAddReviewQuery = ({

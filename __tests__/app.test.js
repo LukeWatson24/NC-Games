@@ -812,3 +812,40 @@ describe("POST /api/categories", () => {
       });
   });
 });
+describe("DELETE /api/reviews/:review_id", () => {
+  it("should return 204 with no content", () => {
+    return request(app)
+      .delete("/api/reviews/2")
+      .expect(204)
+      .then(({ body }) => {
+        expect(body).toEqual({});
+      });
+  });
+  it("should remove the review from the database", () => {
+    return request(app)
+      .delete("/api/reviews/2")
+      .expect(204)
+      .then(() => {
+        return db.query("SELECT * FROM reviews WHERE review_id = 2;");
+      })
+      .then(({ rowCount }) => {
+        expect(rowCount).toBe(0);
+      });
+  });
+  it("should return 404 if the review_id could not be found", () => {
+    return request(app)
+      .delete("/api/reviews/999")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.message).toEqual("id not found");
+      });
+  });
+  it("should return 400 if the data type for review_id is incorrect", () => {
+    return request(app)
+      .delete("/api/reviews/test")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toEqual("invalid data type");
+      });
+  });
+});

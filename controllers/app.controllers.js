@@ -12,6 +12,7 @@ const {
   updateCommentVotes,
   addReview,
   addCategory,
+  removeReview,
 } = require("../models/app.models");
 
 const getCategories = (req, res, next) => {
@@ -170,6 +171,17 @@ const postCategory = (req, res, next) => {
     });
 };
 
+const deleteReview = (req, res, next) => {
+  const { review_id } = req.params;
+  removeReview(review_id)
+    .then(() => {
+      res.sendStatus(204);
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
 module.exports = {
   getCategories,
   getReviews,
@@ -184,4 +196,5 @@ module.exports = {
   patchCommentVotes,
   postReview,
   postCategory,
+  deleteReview,
 };

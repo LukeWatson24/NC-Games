@@ -195,6 +195,18 @@ const addCategory = ({ slug, description }) => {
     });
 };
 
+const removeReview = (review_id) => {
+  return db
+    .query("DELETE FROM reviews WHERE review_id = $1 RETURNING *;", [review_id])
+    .then(({ rowCount }) => {
+      if (rowCount === 0) {
+        return Promise.reject({ status: 404, message: "id not found" });
+      } else {
+        return;
+      }
+    });
+};
+
 module.exports = {
   fetchCategories,
   fetchReviews,
@@ -209,4 +221,5 @@ module.exports = {
   updateCommentVotes,
   addReview,
   addCategory,
+  removeReview,
 };

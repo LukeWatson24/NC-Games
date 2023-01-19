@@ -357,6 +357,22 @@ describe("GET /api/reviews/:review_id/comments", () => {
         });
       });
   });
+  it("returns 400 when the data type for limit is incorrect", () => {
+    return request(app)
+      .get("/api/reviews/3/comments?limit=test")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("invalid data type");
+      });
+  });
+  it("returns 400 when the data type for p is incorrect", () => {
+    return request(app)
+      .get("/api/reviews/3/comments?p=test")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("invalid data type");
+      });
+  });
 });
 
 describe("POST /api/reviews/:review_id/comments", () => {

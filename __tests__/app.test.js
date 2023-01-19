@@ -765,3 +765,50 @@ describe("POST /api/reviews", () => {
       });
   });
 });
+describe("POST /api/categories", () => {
+  it("should return 201 with the new category object", () => {
+    const newCategory = {
+      slug: "TEST SLUG",
+      description: "TEST DESCRIPTION",
+    };
+    return request(app)
+      .post("/api/categories")
+      .send(newCategory)
+      .expect(201)
+      .then(({ body }) => {
+        const { category } = body;
+        expect(category).toHaveProperty("slug", "TEST SLUG");
+        expect(category).toHaveProperty("description", "TEST DESCRIPTION");
+      });
+  });
+  test("adds the new category to the database", () => {
+    const newCategory = {
+      slug: "TEST SLUG",
+      description: "TEST DESCRIPTION",
+    };
+    return request(app)
+      .post("/api/categories")
+      .send(newCategory)
+      .expect(201)
+      .then(() => {
+        return db.query("SELECT * FROM categories WHERE slug = 'TEST SLUG';");
+      })
+      .then(({ rows }) => {
+        const category = rows[0];
+        expect(category.slug).toBe("TEST SLUG");
+        expect(category.description).toBe("TEST DESCRIPTION");
+      });
+  });
+  it("should return 400 if the request body is missing the slug key", () => {
+    const newCategory = {
+      description: "TEST DESCRIPTION",
+    };
+    return request(app)
+      .post("/api/categories")
+      .send(newCategory)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("bad request");
+      });
+  });
+});

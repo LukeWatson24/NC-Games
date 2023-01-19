@@ -180,6 +180,21 @@ const addReview = (newReview) => {
   });
 };
 
+const addCategory = ({ slug, description }) => {
+  return db
+    .query(
+      `
+  INSERT INTO categories
+  (slug, description)
+  VALUES ($1, $2) RETURNING *;
+  `,
+      [slug, description]
+    )
+    .then(({ rows }) => {
+      return rows[0];
+    });
+};
+
 module.exports = {
   fetchCategories,
   fetchReviews,
@@ -193,4 +208,5 @@ module.exports = {
   fetchUserByUsername,
   updateCommentVotes,
   addReview,
+  addCategory,
 };

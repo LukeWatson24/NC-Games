@@ -14,11 +14,6 @@ const fetchCategories = () => {
 
 const fetchReviews = (queries) => {
   const { queryString, queryVals, totalCountStr } = formatReviewsQuery(queries);
-  // const categoryCheck =
-  //   queryVals.length === 2
-  //     ? { rowCount: null }
-  //     : db.query("SELECT * FROM categories WHERE slug = $1;", [queryVals[0]]);
-
   let categoryCheck;
   let totalCount;
   if (queryVals.length === 2) {
@@ -65,7 +60,8 @@ const fetchReviewsById = (review_id) => {
     });
 };
 
-const fetchCommentsByReviewId = (review_id) => {
+const fetchCommentsByReviewId = (review_id, { limit = 10, p = 1 }) => {
+  const pageVal = (p - 1) * limit;
   return db
     .query("SELECT * FROM reviews WHERE review_id = $1;", [review_id])
     .then(({ rows }) => {
@@ -77,9 +73,10 @@ const fetchCommentsByReviewId = (review_id) => {
       return db.query(
         `
             SELECT * FROM comments WHERE review_id = $1
-            ORDER BY created_at DESC;
+            ORDER BY created_at DESC
+            LIMIT $2 OFFSET $3;
             `,
-        [review_id]
+        [review_id, limit, pageVal]
       );
     })
     .then(({ rows }) => {

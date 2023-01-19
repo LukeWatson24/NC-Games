@@ -201,6 +201,22 @@ describe("GET /api/reviews", () => {
         expect(total_count).toBe(13);
       });
   });
+  test("returns 400 when data type for limit is incorrect", () => {
+    return request(app)
+      .get("/api/reviews?limit=test")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("invalid data type");
+      });
+  });
+  test("returns 400 when data type for p is incorrect", () => {
+    return request(app)
+      .get("/api/reviews?p=test")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("invalid data type");
+      });
+  });
 });
 describe("GET /api/reviews/:review_id", () => {
   it("should return 200 with an object containing the correct keys", () => {
@@ -302,6 +318,43 @@ describe("GET /api/reviews/:review_id/comments", () => {
       .expect(400)
       .then(({ body }) => {
         expect(body.message).toBe("invalid data type");
+      });
+  });
+  it("should return up to the first 10 results when the limit query is omitted", () => {
+    return request(app)
+      .get("/api/reviews/2/comments")
+      .then(({ body }) => {
+        const { comments } = body;
+        expect(comments.length).toBeLessThanOrEqual(10);
+      });
+  });
+  it("should limit the number of returned results to the number provided by the limit query", () => {
+    return request(app)
+      .get("/api/reviews/2/comments?limit=2")
+      .then(({ body }) => {
+        const { comments } = body;
+        expect(comments.length).toBeLessThanOrEqual(2);
+      });
+  });
+  test("does not offset the results if the p query is omitted", () => {
+    return request(app)
+      .get("/api/reviews/3/comments?limit=2")
+      .then(({ body }) => {
+        const { comments } = body;
+        comments.forEach(({ comment_id }) => {
+          expect(comment_id).toBeLessThanOrEqual(6);
+          expect(comment_id).toBeGreaterThanOrEqual(3);
+        });
+      });
+  });
+  test("offsets the results based on the p query", () => {
+    return request(app)
+      .get("/api/reviews/3/comments?limit=2&p=2")
+      .then(({ body }) => {
+        const { comments } = body;
+        comments.forEach(({ comment_id }) => {
+          expect(comment_id).toBeLessThanOrEqual(2);
+        });
       });
   });
 });

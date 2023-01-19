@@ -47,7 +47,8 @@ const getReviewsById = (req, res, next) => {
 
 const getCommentsByReviewId = (req, res, next) => {
   const { review_id } = req.params;
-  fetchCommentsByReviewId(review_id)
+  const queryObj = ({ limit, p } = req.query);
+  fetchCommentsByReviewId(review_id, queryObj)
     .then((comments) => {
       res.status(200).send({ comments });
     })

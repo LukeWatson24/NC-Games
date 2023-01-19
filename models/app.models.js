@@ -141,11 +141,29 @@ const fetchUserByUsername = (username) => {
     });
 };
 
+const updateCommentVotes = (comment_id, inc_votes) => {
+  return db
+    .query(
+      `
+  UPDATE comments
+  SET votes = votes + $1
+  WHERE comment_id = $2
+  RETURNING *;
+  `,
+      [inc_votes, comment_id]
+    )
+    .then(({ rows }) => {
+      if (rows.length === 0) {
+        return Promise.reject({ status: 404, message: "id not found" });
+      }
+      return rows[0];
+    });
+};
+
 const addReview = (newReview) => {
   const { queryString, valsArr } = formatAddReviewQuery(newReview);
   return db.query(queryString, valsArr).then(({ rows }) => {
     const { review_id } = rows[0];
-    console.log(review_id);
     return review_id;
   });
 };
@@ -161,5 +179,6 @@ module.exports = {
   removeComment,
   fetchEndpoints,
   fetchUserByUsername,
+  updateCommentVotes,
   addReview,
 };

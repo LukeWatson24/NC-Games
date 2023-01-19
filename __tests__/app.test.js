@@ -334,13 +334,13 @@ describe("POST /api/reviews/:review_id/comments", () => {
   });
 });
 describe("PATCH /api/reviews/:review_id", () => {
-  it("should return 201 with the updated review object", () => {
+  it("should return 200 with the updated review object", () => {
     return request(app)
       .patch("/api/reviews/2")
       .send({ inc_votes: 2 })
       .expect(200)
       .then(({ body }) => {
-        const review = body.review;
+        const { review } = body;
         expect(review).toHaveProperty("review_id", 2);
         expect(review).toHaveProperty("title", "Jenga");
         expect(review).toHaveProperty("designer", "Leslie Scott");
@@ -357,15 +357,10 @@ describe("PATCH /api/reviews/:review_id", () => {
         expect(review).toHaveProperty("votes", 7);
       });
   });
-  it("should ignore extra keys on the request body if present", () => {
-    return request(app)
-      .patch("/api/reviews/2")
-      .send({ inc_votes: 2, test_key: "TEST" })
-      .expect(200);
-  });
   it("should return 404 when attempting to update the votes on a review that does not exist", () => {
     return request(app)
       .patch("/api/reviews/999")
+      .expect(404)
       .send({ inc_votes: 2 })
       .then(({ body }) => {
         expect(body.message).toBe("id not found");
@@ -375,6 +370,7 @@ describe("PATCH /api/reviews/:review_id", () => {
     return request(app)
       .patch("/api/reviews/test")
       .send({ inc_votes: 2 })
+      .expect(400)
       .then(({ body }) => {
         expect(body.message).toBe("invalid data type");
       });
@@ -383,6 +379,7 @@ describe("PATCH /api/reviews/:review_id", () => {
     return request(app)
       .patch("/api/reviews/2")
       .send({ inc_votes: "TEST" })
+      .expect(400)
       .then(({ body }) => {
         expect(body.message).toBe("invalid data type");
       });
@@ -391,6 +388,7 @@ describe("PATCH /api/reviews/:review_id", () => {
     return request(app)
       .patch("/api/reviews/2")
       .send({})
+      .expect(400)
       .then(({ body }) => {
         expect(body.message).toBe("bad request");
       });
@@ -482,35 +480,157 @@ describe("GET /api/users/:username", () => {
       });
   });
 });
-// describe.only("POST /api/reviews", () => {
-//   it("should return 201 with the newly created review object", () => {
-//     const newReview = {
-//       owner: "mallionaire",
-//       title: "TEST GAME",
-//       review_body: "TEST REVIEW BODY",
-//       designer: "TEST DESIGNER",
-//       category: "dexterity",
-//       review_img_url:
-//         "https://images.pexels.com/photos/5350049/pexels-photo-5350049.jpeg?w=700&h=700",
-//     };
-//     return request(app)
-//       .post("/api/reviews")
-//       .send(newReview)
-//       .expect(201)
-//       .then(({ body }) => {
-//         const { review } = body;
-//         expect(review).toHaveProperty("review_id", expect.any(Number));
-//         expect(review).toHaveProperty("votes", 0);
-//         expect(review).toHaveProperty("created_at", expect.any(String));
-//         expect(review).toHaveProperty("comment_count", 0);
-//         expect(review).toHaveProperty("owner", "mallionaire");
-//         expect(review).toHaveProperty("title", "TEST GAME");
-//         expect(review).toHaveProperty("review_body", "TEST REVIEW BODY");
-//         expect(review).toHaveProperty("designer", "TEST DESIGNER");
-//         expect(review).toHaveProperty(
-//           "review_img_url",
-//           "https://images.pexels.com/photos/5350049/pexels-photo-5350049.jpeg?w=700&h=700"
-//         );
-//       });
-//   });
-// });
+describe("PATCH /api/comments/:comment_id", () => {
+  it("should return 200 with the updated comment object", () => {
+    return request(app)
+      .patch("/api/comments/2")
+      .send({ inc_votes: 2 })
+      .expect(200)
+      .then(({ body }) => {
+        const { comment } = body;
+        expect(comment).toHaveProperty("comment_id", 2);
+        expect(comment).toHaveProperty("body", "My dog loved this game too!");
+        expect(comment).toHaveProperty("author", "mallionaire");
+        expect(comment).toHaveProperty("review_id", 3);
+        expect(comment).toHaveProperty(
+          "created_at",
+          "2021-01-18T10:09:05.410Z"
+        );
+        expect(comment).toHaveProperty("votes", 15);
+      });
+  });
+  it("should return 404 when attempting to update the votes on a comment that does not exist", () => {
+    return request(app)
+      .patch("/api/comments/999")
+      .expect(404)
+      .send({ inc_votes: 2 })
+      .then(({ body }) => {
+        expect(body.message).toBe("id not found");
+      });
+  });
+  it("should return 400 when the data type for comment_id is incorrect", () => {
+    return request(app)
+      .patch("/api/comments/test")
+      .send({ inc_votes: 2 })
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("invalid data type");
+      });
+  });
+  it("should return 400 when the data type for inc_votes is incorrect", () => {
+    return request(app)
+      .patch("/api/comments/2")
+      .send({ inc_votes: "TEST" })
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("invalid data type");
+      });
+  });
+  it("should return 400 when inc_votes is missing", () => {
+    return request(app)
+      .patch("/api/comments/2")
+      .send({})
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("bad request");
+      });
+  });
+});
+describe("POST /api/reviews", () => {
+  it("should return 201 with the newly created review object", () => {
+    const newReview = {
+      owner: "mallionaire",
+      title: "TEST GAME",
+      review_body: "TEST REVIEW BODY",
+      designer: "TEST DESIGNER",
+      category: "dexterity",
+      review_img_url:
+        "https://images.pexels.com/photos/5350049/pexels-photo-5350049.jpeg?w=700&h=700",
+    };
+    return request(app)
+      .post("/api/reviews")
+      .send(newReview)
+      .expect(201)
+      .then(({ body }) => {
+        const { review } = body;
+        expect(review).toHaveProperty("review_id", expect.any(Number));
+        expect(review).toHaveProperty("votes", 0);
+        expect(review).toHaveProperty("created_at", expect.any(String));
+        expect(review).toHaveProperty("comment_count", 0);
+        expect(review).toHaveProperty("owner", "mallionaire");
+        expect(review).toHaveProperty("title", "TEST GAME");
+        expect(review).toHaveProperty("review_body", "TEST REVIEW BODY");
+        expect(review).toHaveProperty("designer", "TEST DESIGNER");
+        expect(review).toHaveProperty(
+          "review_img_url",
+          "https://images.pexels.com/photos/5350049/pexels-photo-5350049.jpeg?w=700&h=700"
+        );
+      });
+  });
+  it("should default the review_img_url if not provided", () => {
+    const newReview = {
+      owner: "mallionaire",
+      title: "TEST GAME",
+      review_body: "TEST REVIEW BODY",
+      designer: "TEST DESIGNER",
+      category: "dexterity",
+    };
+    return request(app)
+      .post("/api/reviews")
+      .send(newReview)
+      .expect(201)
+      .then(({ body }) => {
+        const { review } = body;
+        expect(review.review_img_url).toBe(
+          "https://images.pexels.com/photos/163064/play-stone-network-networked-interactive-163064.jpeg?w=700&h=700"
+        );
+      });
+  });
+  it("should return 400 if the request body has missing required keys", () => {
+    const newReview = {
+      owner: "mallionaire",
+      review_body: "TEST REVIEW BODY",
+      designer: "TEST DESIGNER",
+      category: "dexterity",
+    };
+    return request(app)
+      .post("/api/reviews")
+      .send(newReview)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("bad request");
+      });
+  });
+  it("should return 400 if the owner cannot be found in the users table", () => {
+    const newReview = {
+      owner: "test",
+      title: "TEST GAME",
+      review_body: "TEST REVIEW BODY",
+      designer: "TEST DESIGNER",
+      category: "dexterity",
+    };
+    return request(app)
+      .post("/api/reviews")
+      .send(newReview)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("bad request");
+      });
+  });
+  it("should return 400 if the category cannot be found in the categories table", () => {
+    const newReview = {
+      owner: "mallionaire",
+      title: "TEST GAME",
+      review_body: "TEST REVIEW BODY",
+      designer: "TEST DESIGNER",
+      category: "test",
+    };
+    return request(app)
+      .post("/api/reviews")
+      .send(newReview)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("bad request");
+      });
+  });
+});

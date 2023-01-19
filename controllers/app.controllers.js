@@ -9,6 +9,7 @@ const {
   removeComment,
   fetchEndpoints,
   fetchUserByUsername,
+  updateCommentVotes,
   addReview,
 } = require("../models/app.models");
 
@@ -123,6 +124,18 @@ const getUserByUsername = (req, res, next) => {
     });
 };
 
+const patchCommentVotes = (req, res, next) => {
+  const { comment_id } = req.params;
+  const { inc_votes } = req.body;
+  updateCommentVotes(comment_id, inc_votes)
+    .then((comment) => {
+      res.status(200).send({ comment });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
 const postReview = (req, res, next) => {
   const reviewObj = ({
     owner,
@@ -137,7 +150,7 @@ const postReview = (req, res, next) => {
       return fetchReviewsById(review_id);
     })
     .then((review) => {
-      return review;
+      res.status(201).send({ review });
     })
     .catch((err) => {
       next(err);
@@ -155,5 +168,6 @@ module.exports = {
   deleteComment,
   getEndpoints,
   getUserByUsername,
+  patchCommentVotes,
   postReview,
 };

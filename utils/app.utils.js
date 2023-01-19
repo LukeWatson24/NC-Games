@@ -44,3 +44,36 @@ exports.formatReviewsQuery = ({
 
   return { queryString, categoryQuery };
 };
+
+exports.formatAddReviewQuery = ({
+  owner,
+  title,
+  review_body,
+  designer,
+  category,
+  review_img_url,
+}) => {
+  const valsArr = [
+    owner,
+    title,
+    review_body,
+    designer,
+    category,
+    review_img_url,
+  ];
+  if (review_img_url === undefined) {
+    const queryString = `
+      INSERT INTO reviews
+      (owner, title, review_body, designer, category)
+      VALUES ($1, $2, $3, $4, $5) RETURNING review_id;`;
+
+    return { queryString, valsArr: valsArr.slice(0, valsArr.length - 1) };
+  } else {
+    const queryString = `
+    INSERT INTO reviews
+    (owner, title, review_body, designer, category, review_img_url)
+    VALUES ($1, $2, $3, $4, $5, $6) RETURNING review_id`;
+
+    return { queryString, valsArr };
+  }
+};

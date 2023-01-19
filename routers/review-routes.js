@@ -5,9 +5,10 @@ const {
   getCommentsByReviewId,
   postComment,
   patchReviewVotes,
+  postReview,
 } = require("../controllers/app.controllers");
 
-reviewsRouter.get("/", getReviews);
+reviewsRouter.route("/").get(getReviews).post(postReview);
 reviewsRouter.route("/:review_id").get(getReviewsById).patch(patchReviewVotes);
 reviewsRouter
   .route("/:review_id/comments")

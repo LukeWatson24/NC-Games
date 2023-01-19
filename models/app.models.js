@@ -2,6 +2,7 @@ const db = require("../db/connection");
 const {
   formatReviewsQuery,
   formatAddReviewQuery,
+  rowCountCheck,
 } = require("../utils/app.utils");
 const fs = require("fs/promises");
 const path = require("path");
@@ -31,12 +32,12 @@ const fetchReviews = (queries) => {
     categoryCheck,
     totalCount,
   ]).then(([{ rows }, { rowCount }, count]) => {
-    if (rowCount === 0) {
-      return Promise.reject({ status: 404, message: "category not found" });
-    } else {
-      const { total_count } = count.rows[0];
-      return { reviews: rows, total_count };
-    }
+    const { total_count } = count.rows[0];
+    return rowCountCheck(
+      rowCount,
+      { reviews: rows, total_count },
+      "category not found"
+    );
   });
 };
 
@@ -51,37 +52,26 @@ const fetchReviewsById = (review_id) => {
     GROUP BY reviews.review_id;`,
       [review_id]
     )
-    .then(({ rows }) => {
-      if (rows.length === 0) {
-        return Promise.reject({ status: 404, message: "id not found" });
-      } else {
-        return rows[0];
-      }
+    .then(({ rows, rowCount }) => {
+      return rowCountCheck(rowCount, rows[0], "id not found");
     });
 };
 
 const fetchCommentsByReviewId = (review_id, { limit = 10, p = 1 }) => {
   const pageVal = (p - 1) * limit;
-  return db
-    .query("SELECT * FROM reviews WHERE review_id = $1;", [review_id])
-    .then(({ rows }) => {
-      if (rows.length === 0) {
-        return Promise.reject({ status: 404, message: "id not found" });
-      } else return;
-    })
-    .then(() => {
-      return db.query(
-        `
-            SELECT * FROM comments WHERE review_id = $1
-            ORDER BY created_at DESC
-            LIMIT $2 OFFSET $3;
-            `,
-        [review_id, limit, pageVal]
-      );
-    })
-    .then(({ rows }) => {
-      return rows;
-    });
+  return Promise.all([
+    db.query("SELECT * FROM reviews WHERE review_id = $1;", [review_id]),
+    db.query(
+      `
+        SELECT * FROM comments WHERE review_id = $1
+        ORDER BY created_at DESC
+        LIMIT $2 OFFSET $3;
+        `,
+      [review_id, limit, pageVal]
+    ),
+  ]).then(([{ rowCount }, { rows }]) => {
+    return rowCountCheck(rowCount, rows, "id not found");
+  });
 };
 
 const addCommentToReview = (review_id, { username, body }) => {
@@ -127,9 +117,7 @@ const removeComment = (comment_id) => {
       comment_id,
     ])
     .then(({ rowCount }) => {
-      if (rowCount === 0) {
-        return Promise.reject({ status: 404, message: "id not found" });
-      }
+      return rowCountCheck(rowCount, null, "id not found");
     });
 };
 
@@ -144,12 +132,8 @@ const fetchEndpoints = () => {
 const fetchUserByUsername = (username) => {
   return db
     .query("SELECT * FROM users WHERE username = $1", [username])
-    .then(({ rows }) => {
-      if (rows.length === 0) {
-        return Promise.reject({ status: 404, message: "username not found" });
-      } else {
-        return rows[0];
-      }
+    .then(({ rows, rowCount }) => {
+      return rowCountCheck(rowCount, rows[0], "username not found");
     });
 };
 
@@ -164,11 +148,8 @@ const updateCommentVotes = (comment_id, inc_votes) => {
   `,
       [inc_votes, comment_id]
     )
-    .then(({ rows }) => {
-      if (rows.length === 0) {
-        return Promise.reject({ status: 404, message: "id not found" });
-      }
-      return rows[0];
+    .then(({ rows, rowCount }) => {
+      return rowCountCheck(rowCount, rows[0], "id not found");
     });
 };
 
@@ -199,11 +180,7 @@ const removeReview = (review_id) => {
   return db
     .query("DELETE FROM reviews WHERE review_id = $1 RETURNING *;", [review_id])
     .then(({ rowCount }) => {
-      if (rowCount === 0) {
-        return Promise.reject({ status: 404, message: "id not found" });
-      } else {
-        return;
-      }
+      return rowCountCheck(rowCount, null, "id not found");
     });
 };
 

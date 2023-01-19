@@ -88,3 +88,11 @@ exports.formatAddReviewQuery = ({
     return { queryString, valsArr };
   }
 };
+
+exports.rowCountCheck = (count, returnVal, message) => {
+  if (count === 0) {
+    return Promise.reject({ status: 404, message });
+  } else {
+    return returnVal;
+  }
+};

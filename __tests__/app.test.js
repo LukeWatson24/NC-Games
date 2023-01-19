@@ -536,3 +536,101 @@ describe("PATCH /api/comments/:comment_id", () => {
       });
   });
 });
+describe("POST /api/reviews", () => {
+  it("should return 201 with the newly created review object", () => {
+    const newReview = {
+      owner: "mallionaire",
+      title: "TEST GAME",
+      review_body: "TEST REVIEW BODY",
+      designer: "TEST DESIGNER",
+      category: "dexterity",
+      review_img_url:
+        "https://images.pexels.com/photos/5350049/pexels-photo-5350049.jpeg?w=700&h=700",
+    };
+    return request(app)
+      .post("/api/reviews")
+      .send(newReview)
+      .expect(201)
+      .then(({ body }) => {
+        const { review } = body;
+        expect(review).toHaveProperty("review_id", expect.any(Number));
+        expect(review).toHaveProperty("votes", 0);
+        expect(review).toHaveProperty("created_at", expect.any(String));
+        expect(review).toHaveProperty("comment_count", 0);
+        expect(review).toHaveProperty("owner", "mallionaire");
+        expect(review).toHaveProperty("title", "TEST GAME");
+        expect(review).toHaveProperty("review_body", "TEST REVIEW BODY");
+        expect(review).toHaveProperty("designer", "TEST DESIGNER");
+        expect(review).toHaveProperty(
+          "review_img_url",
+          "https://images.pexels.com/photos/5350049/pexels-photo-5350049.jpeg?w=700&h=700"
+        );
+      });
+  });
+  it("should default the review_img_url if not provided", () => {
+    const newReview = {
+      owner: "mallionaire",
+      title: "TEST GAME",
+      review_body: "TEST REVIEW BODY",
+      designer: "TEST DESIGNER",
+      category: "dexterity",
+    };
+    return request(app)
+      .post("/api/reviews")
+      .send(newReview)
+      .expect(201)
+      .then(({ body }) => {
+        const { review } = body;
+        expect(review.review_img_url).toBe(
+          "https://images.pexels.com/photos/163064/play-stone-network-networked-interactive-163064.jpeg?w=700&h=700"
+        );
+      });
+  });
+  it("should return 400 if the request body has missing required keys", () => {
+    const newReview = {
+      owner: "mallionaire",
+      review_body: "TEST REVIEW BODY",
+      designer: "TEST DESIGNER",
+      category: "dexterity",
+    };
+    return request(app)
+      .post("/api/reviews")
+      .send(newReview)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("bad request");
+      });
+  });
+  it("should return 400 if the owner cannot be found in the users table", () => {
+    const newReview = {
+      owner: "test",
+      title: "TEST GAME",
+      review_body: "TEST REVIEW BODY",
+      designer: "TEST DESIGNER",
+      category: "dexterity",
+    };
+    return request(app)
+      .post("/api/reviews")
+      .send(newReview)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("bad request");
+      });
+  });
+  it("should return 400 if the category cannot be found in the categories table", () => {
+    const newReview = {
+      owner: "mallionaire",
+      title: "TEST GAME",
+      review_body: "TEST REVIEW BODY",
+      designer: "TEST DESIGNER",
+      category: "test",
+    };
+    return request(app)
+      .post("/api/reviews")
+      .send(newReview)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("bad request");
+      });
+  });
+});

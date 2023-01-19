@@ -1,5 +1,8 @@
 const db = require("../db/connection");
-const { formatReviewsQuery } = require("../utils/app.utils");
+const {
+  formatReviewsQuery,
+  formatAddReviewQuery,
+} = require("../utils/app.utils");
 const fs = require("fs/promises");
 const path = require("path");
 
@@ -157,6 +160,14 @@ const updateCommentVotes = (comment_id, inc_votes) => {
     });
 };
 
+const addReview = (newReview) => {
+  const { queryString, valsArr } = formatAddReviewQuery(newReview);
+  return db.query(queryString, valsArr).then(({ rows }) => {
+    const { review_id } = rows[0];
+    return review_id;
+  });
+};
+
 module.exports = {
   fetchCategories,
   fetchReviews,
@@ -169,4 +180,5 @@ module.exports = {
   fetchEndpoints,
   fetchUserByUsername,
   updateCommentVotes,
+  addReview,
 };

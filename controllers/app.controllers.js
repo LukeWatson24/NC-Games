@@ -10,6 +10,7 @@ const {
   fetchEndpoints,
   fetchUserByUsername,
   updateCommentVotes,
+  addReview,
 } = require("../models/app.models");
 
 const getCategories = (req, res, next) => {
@@ -135,6 +136,27 @@ const patchCommentVotes = (req, res, next) => {
     });
 };
 
+const postReview = (req, res, next) => {
+  const reviewObj = ({
+    owner,
+    title,
+    review_body,
+    designer,
+    category,
+    review_img_url,
+  } = req.body);
+  addReview(reviewObj)
+    .then((review_id) => {
+      return fetchReviewsById(review_id);
+    })
+    .then((review) => {
+      res.status(201).send({ review });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
 module.exports = {
   getCategories,
   getReviews,
@@ -147,4 +169,5 @@ module.exports = {
   getEndpoints,
   getUserByUsername,
   patchCommentVotes,
+  postReview,
 };

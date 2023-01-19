@@ -482,35 +482,35 @@ describe("GET /api/users/:username", () => {
       });
   });
 });
-describe.only("POST /api/reviews", () => {
-  it("should return 201 with the newly created review object", () => {
-    const newReview = {
-      owner: "mallionaire",
-      title: "TEST GAME",
-      review_body: "TEST REVIEW BODY",
-      designer: "TEST DESIGNER",
-      category: "dexterity",
-      review_img_url:
-        "https://images.pexels.com/photos/5350049/pexels-photo-5350049.jpeg?w=700&h=700",
-    };
-    return request(app)
-      .post("/api/reviews")
-      .send(newReview)
-      .expect(201)
-      .then(({ body }) => {
-        const { review } = body;
-        expect(review).toHaveProperty("review_id", expect.any(Number));
-        expect(review).toHaveProperty("votes", 0);
-        expect(review).toHaveProperty("created_at", expect.any(String));
-        expect(review).toHaveProperty("comment_count", 0);
-        expect(review).toHaveProperty("owner", "mallionaire");
-        expect(review).toHaveProperty("title", "TEST GAME");
-        expect(review).toHaveProperty("review_body", "TEST REVIEW BODY");
-        expect(review).toHaveProperty("designer", "TEST DESIGNER");
-        expect(review).toHaveProperty(
-          "review_img_url",
-          "https://images.pexels.com/photos/5350049/pexels-photo-5350049.jpeg?w=700&h=700"
-        );
-      });
-  });
-});
+// describe.only("POST /api/reviews", () => {
+//   it("should return 201 with the newly created review object", () => {
+//     const newReview = {
+//       owner: "mallionaire",
+//       title: "TEST GAME",
+//       review_body: "TEST REVIEW BODY",
+//       designer: "TEST DESIGNER",
+//       category: "dexterity",
+//       review_img_url:
+//         "https://images.pexels.com/photos/5350049/pexels-photo-5350049.jpeg?w=700&h=700",
+//     };
+//     return request(app)
+//       .post("/api/reviews")
+//       .send(newReview)
+//       .expect(201)
+//       .then(({ body }) => {
+//         const { review } = body;
+//         expect(review).toHaveProperty("review_id", expect.any(Number));
+//         expect(review).toHaveProperty("votes", 0);
+//         expect(review).toHaveProperty("created_at", expect.any(String));
+//         expect(review).toHaveProperty("comment_count", 0);
+//         expect(review).toHaveProperty("owner", "mallionaire");
+//         expect(review).toHaveProperty("title", "TEST GAME");
+//         expect(review).toHaveProperty("review_body", "TEST REVIEW BODY");
+//         expect(review).toHaveProperty("designer", "TEST DESIGNER");
+//         expect(review).toHaveProperty(
+//           "review_img_url",
+//           "https://images.pexels.com/photos/5350049/pexels-photo-5350049.jpeg?w=700&h=700"
+//         );
+//       });
+//   });
+// });

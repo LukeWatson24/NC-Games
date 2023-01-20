@@ -5,6 +5,7 @@ const {
   noResults,
   invalidDataTypePSQL,
   badRequestPSQL,
+  keyAlreadyExists,
 } = require("./error_handling/app.errors");
 
 const app = express();
@@ -15,5 +16,6 @@ app.all("/*", pathNotFound);
 app.use(noResults);
 app.use(invalidDataTypePSQL);
 app.use(badRequestPSQL);
+app.use(keyAlreadyExists);
 
 module.exports = app;

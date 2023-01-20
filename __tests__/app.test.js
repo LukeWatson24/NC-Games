@@ -4,6 +4,14 @@ const testData = require("../db/data/test-data/index");
 const db = require("../db/connection");
 const seed = require("../db/seeds/seed");
 const endpoints = require("../endpoints.json");
+jest.mock("../utils/app.auth", () => {
+  return {
+    verifyToken: (req, res, next) => {
+      req.user = { username: "philippaclaire9" };
+      return next();
+    },
+  };
+});
 
 beforeEach(() => {
   return seed(testData);

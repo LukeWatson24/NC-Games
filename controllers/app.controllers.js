@@ -13,6 +13,8 @@ const {
   addReview,
   addCategory,
   removeReview,
+  addUser,
+  userLogin,
 } = require("../models/app.models");
 
 const getCategories = (req, res, next) => {
@@ -97,7 +99,8 @@ const getUsers = (req, res, next) => {
 
 const deleteComment = (req, res, next) => {
   const { comment_id } = req.params;
-  removeComment(comment_id)
+  const { username } = req.user;
+  removeComment(comment_id, username)
     .then(() => {
       res.sendStatus(204);
     })
@@ -173,9 +176,32 @@ const postCategory = (req, res, next) => {
 
 const deleteReview = (req, res, next) => {
   const { review_id } = req.params;
-  removeReview(review_id)
+  const { username } = req.user;
+  removeReview(review_id, username)
     .then(() => {
       res.sendStatus(204);
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+const postSignUpUser = (req, res, next) => {
+  const userObj = ({ username, name, password, avatar_url } = req.body);
+  addUser(userObj)
+    .then((user) => {
+      res.status(201).send({ user });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+const postSignIn = (req, res, next) => {
+  const userObj = ({ username, password } = req.body);
+  userLogin(userObj)
+    .then((token) => {
+      res.status(200).send({ token });
     })
     .catch((err) => {
       next(err);
@@ -197,4 +223,6 @@ module.exports = {
   postReview,
   postCategory,
   deleteReview,
+  postSignUpUser,
+  postSignIn,
 };

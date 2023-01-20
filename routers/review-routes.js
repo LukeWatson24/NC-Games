@@ -8,16 +8,17 @@ const {
   postReview,
   deleteReview,
 } = require("../controllers/app.controllers");
+const { verifyToken } = require("../utils/app.auth");
 
-reviewsRouter.route("/").get(getReviews).post(postReview);
+reviewsRouter.route("/").get(getReviews).post(verifyToken, postReview);
 reviewsRouter
   .route("/:review_id")
   .get(getReviewsById)
-  .patch(patchReviewVotes)
-  .delete(deleteReview);
+  .patch(verifyToken, patchReviewVotes)
+  .delete(verifyToken, deleteReview);
 reviewsRouter
   .route("/:review_id/comments")
   .get(getCommentsByReviewId)
-  .post(postComment);
+  .post(verifyToken, postComment);
 
 module.exports = reviewsRouter;

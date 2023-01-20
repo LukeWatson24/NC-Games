@@ -6,7 +6,7 @@
   "scripts": {
     "setup-dbs": "psql -f ./db/setup.sql",
     "seed": "node ./db/seeds/run-seed.js",
-    "test": "jest",
+    "test": "jest --runInBand",
     "prepare": "husky install",
     "start": "node listen.js",
     "seed-prod": "NODE_ENV=production npm run seed"
@@ -23,8 +23,10 @@
   },
   "homepage": "https://github.com/northcoders/be-nc-games#readme",
   "dependencies": {
+    "bcrypt": "^5.1.0",
     "dotenv": "^16.0.0",
     "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.0",
     "pg": "^8.7.3"
   },
   "devDependencies": {

@@ -1,5 +1,6 @@
 const db = require("../connection");
 const format = require("pg-format");
+const bcrypt = require("bcrypt");
 const {
   convertTimestampToDate,
   createRef,
@@ -28,6 +29,7 @@ const seed = ({ categoryData, commentData, reviewData, userData }) => {
 			CREATE TABLE users (
 				username VARCHAR PRIMARY KEY,
 				name VARCHAR NOT NULL,
+        password_hash VARCHAR NOT NULL,
 				avatar_url VARCHAR
 			);`);
 
@@ -58,20 +60,21 @@ const seed = ({ categoryData, commentData, reviewData, userData }) => {
 				created_at TIMESTAMP DEFAULT NOW()
 			);`);
     })
-    .then(() => {
+    .then(async () => {
       const insertCategoriesQueryStr = format(
         "INSERT INTO categories (slug, description) VALUES %L;",
         categoryData.map(({ slug, description }) => [slug, description])
       );
       const categoriesPromise = db.query(insertCategoriesQueryStr);
-
+      const userDataArr = await Promise.all(
+        userData.map(async ({ username, name, avatar_url }) => {
+          const password_hash = await bcrypt.hash(username, 10);
+          return [username, name, avatar_url, password_hash];
+        })
+      );
       const insertUsersQueryStr = format(
-        "INSERT INTO users (username, name, avatar_url) VALUES %L;",
-        userData.map(({ username, name, avatar_url }) => [
-          username,
-          name,
-          avatar_url,
-        ])
+        "INSERT INTO users (username, name, avatar_url, password_hash) VALUES %L;",
+        userDataArr
       );
       const usersPromise = db.query(insertUsersQueryStr);
 

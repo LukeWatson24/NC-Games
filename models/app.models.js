@@ -119,20 +119,20 @@ const fetchUsers = () => {
     });
 };
 
-const removeComment = (comment_id, username) => {
+const removeComment = (comment_id, { username, accessLevel }) => {
   return db
     .query("SELECT author FROM comments WHERE comment_id = $1;", [comment_id])
     .then(({ rows, rowCount }) => {
       return rowCountCheck(rowCount, rows[0], "id not found");
     })
     .then(({ author }) => {
-      if (author !== username) {
-        return Promise.reject({ status: 403, message: "forbidden" });
-      } else {
+      if (accessLevel === "admin" || author === username) {
         return db.query(
           "DELETE FROM comments WHERE comment_id = $1 RETURNING *;",
           [comment_id]
         );
+      } else {
+        return Promise.reject({ status: 403, message: "forbidden" });
       }
     });
 };
@@ -194,20 +194,20 @@ const addCategory = ({ slug, description }) => {
     });
 };
 
-const removeReview = (review_id, username) => {
+const removeReview = (review_id, { username, accessLevel }) => {
   return db
     .query("SELECT owner FROM reviews WHERE review_id = $1", [review_id])
     .then(({ rows, rowCount }) => {
       return rowCountCheck(rowCount, rows[0], "id not found");
     })
     .then(({ owner }) => {
-      if (owner !== username) {
-        return Promise.reject({ status: 403, message: "forbidden" });
-      } else {
+      if (accessLevel === "admin" || username === owner) {
         return db.query(
           "DELETE FROM reviews WHERE review_id = $1 RETURNING *;",
           [review_id]
         );
+      } else {
+        return Promise.reject({ status: 403, message: "forbidden" });
       }
     });
 };

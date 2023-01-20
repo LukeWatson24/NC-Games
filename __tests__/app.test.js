@@ -7,7 +7,7 @@ const endpoints = require("../endpoints.json");
 jest.mock("../utils/app.auth", () => {
   return {
     verifyToken: (req, res, next) => {
-      req.user = { username: "philippaclaire9" };
+      req.user = { accessLevel: "admin" };
       return next();
     },
   };

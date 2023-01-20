@@ -239,6 +239,19 @@ describe("Protected endpoints", () => {
           expect(body.message).toBe("login required");
         });
     });
+    test("admins can delete reviews without being the owner", () => {
+      const testToken = jwt.sign(
+        { username: "mallionaire", accessLevel: "admin" },
+        KEY,
+        {
+          expiresIn: 5,
+        }
+      );
+      return request(app)
+        .delete("/api/reviews/2")
+        .set("x-access-token", testToken)
+        .expect(204);
+    });
   });
   describe("DELETE /api/comments/:comment_id", () => {
     test("users can delete comments posted by themselves if logged in", () => {
@@ -266,6 +279,19 @@ describe("Protected endpoints", () => {
         .then(({ body }) => {
           expect(body.message).toBe("login required");
         });
+    });
+    test("admins can delete comments without being the owner", () => {
+      const testToken = jwt.sign(
+        { username: "mallionaire", accessLevel: "admin" },
+        KEY,
+        {
+          expiresIn: 5,
+        }
+      );
+      return request(app)
+        .delete("/api/comments/1")
+        .set("x-access-token", testToken)
+        .expect(204);
     });
   });
 });

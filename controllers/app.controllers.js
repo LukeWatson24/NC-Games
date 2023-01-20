@@ -99,8 +99,8 @@ const getUsers = (req, res, next) => {
 
 const deleteComment = (req, res, next) => {
   const { comment_id } = req.params;
-  const { username } = req.user;
-  removeComment(comment_id, username)
+  const userData = ({ username, accessLevel } = req.user);
+  removeComment(comment_id, userData)
     .then(() => {
       res.sendStatus(204);
     })
@@ -176,8 +176,8 @@ const postCategory = (req, res, next) => {
 
 const deleteReview = (req, res, next) => {
   const { review_id } = req.params;
-  const { username } = req.user;
-  removeReview(review_id, username)
+  const userData = ({ username, accessLevel } = req.user);
+  removeReview(review_id, userData)
     .then(() => {
       res.sendStatus(204);
     })

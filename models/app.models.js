@@ -1,4 +1,6 @@
 const db = require("../db/connection");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const {
   formatReviewsQuery,
   formatAddReviewQuery,
@@ -6,6 +8,10 @@ const {
 } = require("../utils/app.utils");
 const fs = require("fs/promises");
 const path = require("path");
+require("dotenv").config({
+  path: `${__dirname}/../.env.jwt`,
+});
+const KEY = process.env.TOKEN_KEY;
 
 const fetchCategories = () => {
   return db.query(`SELECT * FROM categories;`).then(({ rows }) => {
@@ -106,18 +112,28 @@ const updateReviewVotes = (review_id, inc_votes) => {
 };
 
 const fetchUsers = () => {
-  return db.query("SELECT * FROM users;").then(({ rows }) => {
-    return rows;
-  });
+  return db
+    .query("SELECT username, name, avatar_url FROM users;")
+    .then(({ rows }) => {
+      return rows;
+    });
 };
 
-const removeComment = (comment_id) => {
+const removeComment = (comment_id, { username, accessLevel }) => {
   return db
-    .query("DELETE FROM comments WHERE comment_id = $1 RETURNING *;", [
-      comment_id,
-    ])
-    .then(({ rowCount }) => {
-      return rowCountCheck(rowCount, null, "id not found");
+    .query("SELECT author FROM comments WHERE comment_id = $1;", [comment_id])
+    .then(({ rows, rowCount }) => {
+      return rowCountCheck(rowCount, rows[0], "id not found");
+    })
+    .then(({ author }) => {
+      if (accessLevel === "admin" || author === username) {
+        return db.query(
+          "DELETE FROM comments WHERE comment_id = $1 RETURNING *;",
+          [comment_id]
+        );
+      } else {
+        return Promise.reject({ status: 403, message: "forbidden" });
+      }
     });
 };
 
@@ -131,7 +147,9 @@ const fetchEndpoints = () => {
 
 const fetchUserByUsername = (username) => {
   return db
-    .query("SELECT * FROM users WHERE username = $1", [username])
+    .query("SELECT username, name, avatar_url FROM users WHERE username = $1", [
+      username,
+    ])
     .then(({ rows, rowCount }) => {
       return rowCountCheck(rowCount, rows[0], "username not found");
     });
@@ -176,11 +194,70 @@ const addCategory = ({ slug, description }) => {
     });
 };
 
-const removeReview = (review_id) => {
+const removeReview = (review_id, { username, accessLevel }) => {
   return db
-    .query("DELETE FROM reviews WHERE review_id = $1 RETURNING *;", [review_id])
-    .then(({ rowCount }) => {
-      return rowCountCheck(rowCount, null, "id not found");
+    .query("SELECT owner FROM reviews WHERE review_id = $1", [review_id])
+    .then(({ rows, rowCount }) => {
+      return rowCountCheck(rowCount, rows[0], "id not found");
+    })
+    .then(({ owner }) => {
+      if (accessLevel === "admin" || username === owner) {
+        return db.query(
+          "DELETE FROM reviews WHERE review_id = $1 RETURNING *;",
+          [review_id]
+        );
+      } else {
+        return Promise.reject({ status: 403, message: "forbidden" });
+      }
+    });
+};
+
+const addUser = async ({ username, name, password, avatar_url }) => {
+  if (password === undefined) {
+    return Promise.reject({ status: 400, message: "bad request" });
+  }
+  const password_hash = await bcrypt.hash(password, 10);
+  return db
+    .query(
+      `
+  INSERT INTO users
+  (username, name, avatar_url, password_hash)
+  VALUES ($1, $2, $3, $4) RETURNING username, name, avatar_url;`,
+      [username, name, avatar_url, password_hash]
+    )
+    .then(({ rows }) => {
+      return rows[0];
+    });
+};
+
+const userLogin = ({ username, password }) => {
+  return db
+    .query("SELECT * FROM users WHERE username = $1", [username])
+    .then(({ rows, rowCount }) => {
+      return rowCountCheck(
+        rowCount,
+        rows[0],
+        "username or password is incorrect",
+        401
+      );
+    })
+    .then(async (user) => {
+      const isPasswordValid = await bcrypt.compare(
+        password,
+        user.password_hash
+      );
+      if (!isPasswordValid) {
+        return Promise.reject({
+          status: 401,
+          message: "username or password is incorrect",
+        });
+      } else {
+        const { password_hash, ...props } = user;
+        const userData = props;
+        userData.accessLevel = "user";
+        const token = jwt.sign(userData, KEY, { expiresIn: "24h" });
+        return token;
+      }
     });
 };
 
@@ -199,4 +276,6 @@ module.exports = {
   addReview,
   addCategory,
   removeReview,
+  addUser,
+  userLogin,
 };

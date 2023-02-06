@@ -22,19 +22,25 @@ npm install
 
 ## Environment Variables
 
-In order to run this repo locally you will first need to create two .env files in the root folder of your local repo named '.env.test' and '.env.development' and add the following to the files:
+In order to run this repo locally you will first need to create three .env files in the root folder of your local repo named '.env.test', '.env.development' and '.env.jwt' and add the following to the files:
 
 ```
 PGDATABASE=nc_games_test
 ```
 
-to the '.env.test' file and
+to the '.env.test' file,
 
 ```
 PGDATABASE=nc_games
 ```
 
-to the .env.development file.
+to the .env.development file. and
+
+```
+TOKEN_KEY="secret-key"
+```
+
+to the .env.jwt file. You should replace the "secret-key" with your own secret key. You could use a site such as [this one](https://generate-random.org/encryption-key-generator) to genereate a strong key.
 
 ---
 

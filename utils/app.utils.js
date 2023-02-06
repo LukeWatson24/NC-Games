@@ -89,9 +89,9 @@ exports.formatAddReviewQuery = ({
   }
 };
 
-exports.rowCountCheck = (count, returnVal, message) => {
+exports.rowCountCheck = (count, returnVal, message, status = 404) => {
   if (count === 0) {
-    return Promise.reject({ status: 404, message });
+    return Promise.reject({ status, message });
   } else {
     return returnVal;
   }

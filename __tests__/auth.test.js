@@ -294,4 +294,31 @@ describe("Protected endpoints", () => {
         .expect(204);
     });
   });
+  describe("POST /api/categories", () => {
+    test("categories can be posted when logged in", () => {
+      const testToken = jwt.sign({ test: "TEST TOKEN" }, KEY, { expiresIn: 5 });
+      const newCategory = {
+        slug: "TEST SLUG",
+        description: "TEST DESCRIPTION",
+      };
+      return request(app)
+        .post("/api/categories")
+        .send(newCategory)
+        .set("x-access-token", testToken)
+        .expect(201);
+    });
+    test("categories cannot be posted if not logged in", () => {
+      const newCategory = {
+        slug: "TEST SLUG",
+        description: "TEST DESCRIPTION",
+      };
+      return request(app)
+        .post("/api/categories")
+        .send(newCategory)
+        .expect(403)
+        .then(({ body }) => {
+          expect(body.message).toBe("login required");
+        });
+    });
+  });
 });

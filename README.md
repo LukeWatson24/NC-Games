@@ -1,6 +1,6 @@
 # Live API
 
-The live api can be found here: https://nc-games-api.onrender.com/api
+The live api can be found here: https://nc-games-api.onrender.com/api/
 
 # Summary
 

@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors");
 const apiRouter = require("./routers/api-router");
 const {
   pathNotFound,
@@ -9,6 +10,7 @@ const {
 } = require("./error_handling/app.errors");
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 
 app.use("/api", apiRouter);
